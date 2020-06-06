@@ -1,5 +1,5 @@
 # TierryBot
-## v 0.0.1
+## v 0.0.2
 A Proprietary Minecraft Hypixel tier creating bot for Discord
 
 Package Requistites:
