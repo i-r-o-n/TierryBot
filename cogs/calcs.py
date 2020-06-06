@@ -2,15 +2,20 @@ import discord
 from discord.ext import commands
 import requests
 from statistics import mean
+import json
+
 
 star_ranks = (0,50,100,150,200,300,700,1000)
 kills_ranks = (0,1500,3000,4500,6000,9000,21000,30000)
-fkdr_ranks = (0,0.6,0.1,1.4,1.83,2.68,5.81,7.75)
+fkdr_ranks = (0,0.6,1,1.4,1.83,2.68,5.81,7.75)
 finals_ranks = (0,363,1000,1810,2757,4989,17230,29034)
 games_ranks = (0,500,1066,1684,2350,3810,11106,17907)
 beds_ranks = (0,181,500,905,1378,2494,8651,14517)
 
-hypixel_key="fee0fddd-6703-4019-b38b-7e0324822384"
+with open('secrets.json') as f:
+    confidentials = json.load(f)
+
+hypixel_key = confidentials['Hypixel Key']
 
 class Calcs(commands.Cog):
     def __init__(self, bot):
@@ -67,6 +72,7 @@ class Calcs(commands.Cog):
         kills = Calcs.Retrieve(self, ign, "kills_bedwars")
         finals = Calcs.Retrieve(self, ign, "final_kills_bedwars")
 
+        # Gives closest tier for each stat
         closest_star = min(star_ranks, key=(lambda list_value : abs(list_value - stars)))
         closest_kills = min(kills_ranks, key=(lambda list_value : abs(list_value - kills)))
         closest_fkdr = min(fkdr_ranks, key=(lambda list_value : abs(list_value - fkdr)))
