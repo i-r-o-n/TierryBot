@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import os
 import requests
 from cogs.calcs import hypixel_key
 import json
@@ -9,10 +8,6 @@ with open('secrets.json') as f:
     confidentials = json.load(f)
 
 User = confidentials['User']
-
-
-#Change Path to Directory
-os.chdir(f'c:\\Users\\{User}\\desktop\\bot')
 
 class General(commands.Cog):
     def __init__(self, bot):
