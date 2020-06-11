@@ -10,3 +10,6 @@ Package Requistites:
 * json
 * requests
 * statistics
+
+Some code inspired from:
+https://github.com/jacklee1792/BWBot/blob/master/bwbot.py
