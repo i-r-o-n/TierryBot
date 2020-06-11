@@ -1,13 +1,12 @@
 import discord
 from discord.ext import commands
 import requests
+#from cogs.calcs import hypixel_key
 from cogs.calcs import hypixel_key
 import json
 
 with open('secrets.json') as f:
     confidentials = json.load(f)
-
-User = confidentials['User']
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -125,8 +124,7 @@ class General(commands.Cog):
         await member.edit(nick=ign)
 
         log.write(f"\nV, {member}, {ign}")
-        log.close() 
-        discord.Command.Error
+        log.close()
 
     @verify.error
     async def verify_error(self, ctx, error):

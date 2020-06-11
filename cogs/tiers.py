@@ -1,18 +1,11 @@
 from cogs.calcs import Calcs
 import discord
 from discord.ext import commands
-import os
 from statistics import mean
 import json
 
 with open('secrets.json') as f:
     confidentials = json.load(f)
-
-User = confidentials['User']
-
-
-#Change Path to Directory
-os.chdir(f'c:\\Users\\{User}\\desktop\\bot')
 
 tier_roles = (
     'Tier I',
@@ -41,8 +34,8 @@ class Tiers(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='info', aliases=['in','i','stat'])
-    async def info(self, ctx, ign):
+    @commands.command(name='player_info', aliases=['pin','pi','stat'])
+    async def player_info(self, ctx, ign):
         async with ctx.typing():
             await ctx.send(embed=discord.Embed(
                 color=discord.Color.dark_red(),
