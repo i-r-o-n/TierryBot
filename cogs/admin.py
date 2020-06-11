@@ -1,5 +1,16 @@
 from discord.ext import commands
+import json
 
+#a json file is used for api keys and tokens.
+with open('secrets.json') as f:
+    confidentials = json.load(f)
+
+hypixel_key = confidentials['Hypixel Key']
+
+with open('secrets.json') as f:
+    TOKEN = json.load(f)
+
+TOKEN = TOKEN['TOKEN']
 
 class Admin(commands.Cog):
 

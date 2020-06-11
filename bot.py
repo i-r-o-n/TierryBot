@@ -5,7 +5,7 @@ import sys, traceback
 import discord
 import logging
 
-import json
+from cogs.admin import TOKEN
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -13,10 +13,10 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-with open('secrets.json') as f:
-    TOKEN = json.load(f)
+#with open('secrets.json') as f:
+#    TOKEN = json.load(f)
 
-TOKEN = TOKEN['TOKEN']
+#TOKEN = TOKEN['TOKEN']
 
 def get_prefix(bot, message):
 
@@ -44,6 +44,8 @@ if __name__ in '__main__':
       bot.load_extension(extension)
     except Exception as e:
       traceback.print_exc()
+
+# NOTE: search for the text "EDIT!" to find proprietary code in need of changing.
 
 ### Generic Events
 

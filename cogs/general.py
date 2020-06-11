@@ -1,17 +1,14 @@
 import discord
 from discord.ext import commands
 import requests
-#from cogs.calcs import hypixel_key
-from cogs.calcs import hypixel_key
-import json
-
-with open('secrets.json') as f:
-    confidentials = json.load(f)
+from cogs.admin import hypixel_key
 
 class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+
+    #retrieve player rank
     def RetrieveRank(self, ign):
         data = requests.get(f"https://api.hypixel.net/player?key={hypixel_key}&name={ign}").json()
         try:
@@ -62,17 +59,7 @@ class General(commands.Cog):
 
         await ctx.send(content=None, embed=embed)
 
-    @commands.command(name='server icon', aliases=['si'])
-    async def server_icon(self, ctx):
-        embed = discord.Embed(
-            color=discord.Color.lighter_grey(),
-            description='test'
-        )
-        embed.set_image(url=ctx.guild.icon)
-        embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
-        await ctx.trigger_typing()
-        await ctx.send(embed=embed)
-
+    # EDIT!
     @commands.command(name='verify',aliases=['v'])
     async def verify(self, ctx, ign: str=None, member: discord.Member=None):
         log = open("log.txt","a")

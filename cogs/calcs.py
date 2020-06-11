@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 import requests
 from statistics import mean
-import json
+from cogs.admin import hypixel_key
 
-
+#tier levels dictionaries
 star_ranks = (0,50,100,150,200,300,700,1000)
 kills_ranks = (0,1500,3000,4500,6000,9000,21000,30000)
 fkdr_ranks = (0,0.6,1,1.4,1.83,2.68,5.81,7.75)
@@ -12,21 +12,18 @@ finals_ranks = (0,363,1000,1810,2757,4989,17230,29034)
 games_ranks = (0,500,1066,1684,2350,3810,11106,17907)
 beds_ranks = (0,181,500,905,1378,2494,8651,14517)
 
-with open('secrets.json') as f:
-    confidentials = json.load(f)
-
-hypixel_key = confidentials['Hypixel Key']
-
 class Calcs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
+    #general bedwars api retrieve
     def Retrieve(self, ign, stat):
         data = requests.get(f"https://api.hypixel.net/player?key={hypixel_key}&name={ign}").json()
         return data["player"]["stats"]["Bedwars"][stat] if stat in data["player"]["stats"]["Bedwars"] else 0
 
     # Star Calculations
 
+    #determine prestige of player, each 100 stars (480,000 xp) is 1 prestige
     def GetPrestige(self, xp):
         if xp < 0:
             return 0
@@ -53,10 +50,12 @@ class Calcs(commands.Cog):
         else:
             return 0
 
+    #determine stars based on xp. extra calculations due to xp curve being non-linear at the beginning of each prestiege.
     def StarsfromXP(self, ign):
         stars_fxn = (Calcs.Retrieve(self, ign, "Experience") + ((Calcs.GetPrestige(self, Calcs.Retrieve(self, ign, "Experience")) + 1)*12000))/5000
         return stars_fxn
 
+    #return the closest rank (index in the stat dictionary) for each of the player's stats
     def ClosestRank(self, ign):
         global star_ranks
         global kills_ranks
@@ -72,7 +71,7 @@ class Calcs(commands.Cog):
         kills = Calcs.Retrieve(self, ign, "kills_bedwars")
         finals = Calcs.Retrieve(self, ign, "final_kills_bedwars")
 
-        # Gives closest tier for each stat
+        #gives closest tier for each stat
         closest_star = min(star_ranks, key=(lambda list_value : abs(list_value - stars)))
         closest_kills = min(kills_ranks, key=(lambda list_value : abs(list_value - kills)))
         closest_fkdr = min(fkdr_ranks, key=(lambda list_value : abs(list_value - fkdr)))
@@ -83,6 +82,7 @@ class Calcs(commands.Cog):
         stats_set = [star_ranks.index(closest_star),kills_ranks.index(closest_kills),fkdr_ranks.index(closest_fkdr),finals_ranks.index(closest_finals),games_ranks.index(closest_games),beds_ranks.index(closest_beds)]
         return [stats_set, round(mean(stats_set),0)]
 
+    #return the difference between the player's stat and the tier stat of the closest tier for each stat
     def Difference(self, ign):
         global star_ranks
         global kills_ranks
@@ -105,6 +105,8 @@ class Calcs(commands.Cog):
 
         return [ign_stars, [kills_dif, fkdr_dif, finals_dif, games_dif, beds_dif]]
 
+    # EDIT!
+    #formatting the role text into roman characters for discord roles
     def GetRole(self, tier):
         romans = ["I","II","III","IV","V","VI","VII"]
         return str("Tier "+romans[tier-1])
