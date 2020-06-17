@@ -1,154 +1,269 @@
+from typing import List
 import discord
 from discord.ext import commands
 import requests
 from statistics import mean
-from cogs.admin import hypixel_key
+import json
 
-#tier levels dictionaries
-star_ranks = (0,50,100,150,200,300,700,1000)
-kills_ranks = (0,1500,3000,4500,6000,9000,21000,30000)
-fkdr_ranks = (0,0.6,1,1.4,1.83,2.68,5.81,7.75)
-finals_ranks = (0,363,1000,1810,2757,4989,17230,29034)
-games_ranks = (0,500,1066,1684,2350,3810,11106,17907)
-beds_ranks = (0,181,500,905,1378,2494,8651,14517)
+from cogs.api import API
+from cogs.admin import hypixel_key, tiers
 
 class Calcs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    def get_stats(self, ign: str) -> list:
+        uuid = API.get_uuid(self, ign)[0]
+
+        hypixel_data = API.get_hypixel(self, uuid)
+
+        bedwars_stats = hypixel_data['player']['stats']['Bedwars']
+
+        stars = ''
+        try:
+            stars = hypixel_data['player']['achievements']['bedwars_level']
+            #stars = f'[{stars}✫]'
+        except:
+            stars = '?'
+
+        fkdr = ''
+        final_kills = ''
+        fkdr_raw = ''
+        try:
+            final_kills = int(bedwars_stats['final_kills_bedwars'])
+            final_deaths = int(bedwars_stats['final_deaths_bedwars'])
+            fkdr += str(round(final_kills / final_deaths, 2))
+            fkdr += f' ({final_kills}/{final_deaths})'
+            fkdr_raw = round(final_kills / final_deaths, 2)
+        except:
+            fkdr = '?'
+            final_kills = '?'
+            fkdr_raw = '?'
+        
+        winrate = ''
+        try:
+            wins = int(bedwars_stats['wins_bedwars'])
+            losses = int(bedwars_stats['losses_bedwars'])
+            winrate = wins / (wins + losses) * 100
+            winrate = f'{winrate:.2f}%'
+        except:
+            winrate += '?'
+
+        # Winstreak
+        winstreak = ''
+        try:
+            winstreak = bedwars_stats['winstreak']
+        except:
+            winstreak = '?'
+
+        games = ''
+        try:
+            games = bedwars_stats['games_played_bedwars_1']
+        except:
+            games = '?'
+
+        beds = ''
+        try:
+            beds = bedwars_stats['beds_broken_bedwars']
+        except:
+            beds = '?'
+        
+        kills = ''
+        try:
+            kills = bedwars_stats['kills_bedwars']
+        except:
+            kills = '?'
+
+        return [stars, fkdr, kills, winrate, winstreak, games, beds, final_kills, fkdr_raw]
+
+    def get_socials(self, ign: str):
+        
+        uuid = API.get_uuid(self, ign)[0]
+
+        hypixel_data = API.get_hypixel(self, uuid)
+
+        social_discord = ''
+
+        try:
+            social_data = hypixel_data['player']['socialMedia']
     
-    #general bedwars api retrieve
-    def Retrieve(self, ign, stat):
-        data = requests.get(f"https://api.hypixel.net/player?key={hypixel_key}&name={ign}").json()
-        return data["player"]["stats"]["Bedwars"][stat] if stat in data["player"]["stats"]["Bedwars"] else 0
-
-    # Star Calculations
-
-    #determine prestige of player, each 100 stars (480,000 xp) is 1 prestige
-    def GetPrestige(self, xp):
-        if xp < 0:
-            return 0
-        elif 0 < xp < 480000:
-            return 0
-        elif 480000 < xp < 960000:
-            return 1
-        elif 960000 < xp < 1440000:
-            return 2
-        elif 1440000 < xp < 1920000:
-            return 3
-        elif 1920000 < xp < 2400000:
-            return 4
-        elif 2400000 < xp < 2880000:
-            return 5
-        elif 2880000 < xp < 3360000:
-            return 6
-        elif 3360000 < xp < 3840000:
-            return 7
-        elif 3840000 < xp < 4320000:
-            return 8
-        elif 4320000 < xp < 480000:
-            return 9
-        else:
-            return 0
-
-    #determine stars based on xp. extra calculations due to xp curve being non-linear at the beginning of each prestiege.
-    def StarsfromXP(self, ign):
-        stars_fxn = (Calcs.Retrieve(self, ign, "Experience") + ((Calcs.GetPrestige(self, Calcs.Retrieve(self, ign, "Experience")) + 1)*12000))/5000
-        return stars_fxn
-
-    #return the closest rank (index in the stat dictionary) for each of the player's stats
-    def ClosestRank(self, ign):
-        global star_ranks
-        global kills_ranks
-        global fkdr_ranks
-        global finals_ranks
-        global games_ranks
-        global beds_ranks
-
-        games_played = Calcs.Retrieve(self, ign, "games_played_bedwars_1")
-        beds_broken = Calcs.Retrieve(self, ign, "beds_broken_bedwars")
-        stars = Calcs.StarsfromXP(self, ign)
-        fkdr = (Calcs.Retrieve(self, ign, "final_kills_bedwars"))/(Calcs.Retrieve(self, ign, "final_deaths_bedwars"))
-        kills = Calcs.Retrieve(self, ign, "kills_bedwars")
-        finals = Calcs.Retrieve(self, ign, "final_kills_bedwars")
-
-        #gives closest tier for each stat
-        closest_star = min(star_ranks, key=(lambda list_value : abs(list_value - stars)))
-        closest_kills = min(kills_ranks, key=(lambda list_value : abs(list_value - kills)))
-        closest_fkdr = min(fkdr_ranks, key=(lambda list_value : abs(list_value - fkdr)))
-        closest_finals = min(finals_ranks, key=(lambda list_value : abs(list_value - finals)))
-        closest_games = min(games_ranks, key=(lambda list_value : abs(list_value - games_played)))
-        closest_beds = min(beds_ranks, key=(lambda list_value : abs(list_value - beds_broken)))
-
-        stats_set = [star_ranks.index(closest_star),kills_ranks.index(closest_kills),fkdr_ranks.index(closest_fkdr),finals_ranks.index(closest_finals),games_ranks.index(closest_games),beds_ranks.index(closest_beds)]
-        return [stats_set, round(mean(stats_set),0)]
-
-    #return the difference between the player's stat and the tier stat of the closest tier for each stat
-    def Difference(self, ign):
-        global star_ranks
-        global kills_ranks
-        global fkdr_ranks
-        global finals_ranks
-        global games_ranks
-        global beds_ranks
-
-        ign_stars = Calcs.StarsfromXP(self, ign)
-
-        kills_dif = (Calcs.Retrieve(self, ign, "kills_bedwars")) / kills_ranks[int(Calcs.ClosestRank(self, ign)[1])]
-
-        fkdr_dif = (Calcs.Retrieve(self, ign, "final_kills_bedwars") / Calcs.Retrieve(self, ign, "final_deaths_bedwars")) / fkdr_ranks[int(Calcs.ClosestRank(self, ign)[1])]
-
-        finals_dif = (Calcs.Retrieve(self, ign, "final_kills_bedwars")) / finals_ranks[int(Calcs.ClosestRank(self, ign)[1])]
-
-        games_dif = (Calcs.Retrieve(self, ign, "games_played_bedwars_1")) / games_ranks[int(Calcs.ClosestRank(self, ign)[1])]
-
-        beds_dif = Calcs.Retrieve(self, ign, "beds_broken_bedwars") / beds_ranks[int(Calcs.ClosestRank(self, ign)[1])]
-
-        return [ign_stars, [kills_dif, fkdr_dif, finals_dif, games_dif, beds_dif]]
-
-    # EDIT!
-    #formatting the role text into roman characters for discord roles
-    def GetRole(self, tier):
-        romans = ["I","II","III","IV","V","VI","VII"]
-        return str("Tier "+romans[tier-1])
-
-    def RankDisplay(self, tier, stat):
-        if isinstance(tier,list):
-            return stat[(tier[0]-1):(tier[1]-1)]
-        else:
-            if tier == 0:
-                return stat[:]
-            elif 0 < round(tier,0) <= 7:
-                return stat[round(tier,0)]
+            if "DISCORD" in social_data:
+                social_discord += social_data['DISCORD']
+                social_discord = social_discord.replace('1;','')
             else:
-                return stat[:]
+                pass
+            
+            if "links" in social_data:
+                if 'DISCORD' in social_data['links']:
+                    social_discord += social_data['links']['DISCORD']
+            else:
+                pass
 
-    @commands.command(name='ranks', aliases=['r'])
-    async def ranks(self, ctx, tier=0):
-        global star_ranks
-        global kills_ranks
-        global fkdr_ranks
-        global finals_ranks
-        global games_ranks
-        global beds_ranks
+            if social_discord == '':
+                social_discord = 'UNKNOWN'
 
-        embed = discord.Embed(
-            color=discord.Color.blue(),
-            title="Bedwars Tiers",
-            description="""Displaying Stat requirements for each tier\n
-            Specify a tier or leave arguments blank for all tiers.\n
-            NOTE: in the future -> Use range of tier values by list object \"[tier1,tier2]\""""
-        )
+            return social_discord
+        except:
+            return 'UNKNOWN'
 
-        embed.set_author(name="TIERS")
-        embed.add_field(name="Star ranks", value=Calcs.RankDisplay(self, tier, star_ranks), inline=False)
-        embed.add_field(name="Kill ranks", value=Calcs.RankDisplay(self, tier, kills_ranks), inline=False)
-        embed.add_field(name="FKDR ranks", value=Calcs.RankDisplay(self, tier, fkdr_ranks), inline=False)
-        embed.add_field(name="Finals ranks", value=Calcs.RankDisplay(self, tier, finals_ranks), inline=False)
-        embed.add_field(name="Games Played ranks", value=Calcs.RankDisplay(self, tier, games_ranks), inline=False)
-        embed.add_field(name="Beds Broken ranks", value=Calcs.RankDisplay(self, tier, beds_ranks), inline=False)
-        embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
-        await ctx.trigger_typing()
-        await ctx.send(embed=embed)
+    def get_nick(self, nick: str) -> str:
+        if "✫]" in nick:
+            return nick[nick.index("]")+2:]
+        else:
+            return nick
+
+    class Rank:
+
+        def get_rank(self, ign: str):
+
+            uuid = API.get_uuid(self, ign)[0]
+
+            hypixel_data = API.get_hypixel(self, uuid)
+
+            if 'newPackageRank' in hypixel_data['player']:
+                return hypixel_data["player"]["newPackageRank"]
+            else:
+                return 0
+            
+
+        def get_sub(self, ign: str) -> int:
+
+            uuid = API.get_uuid(self, ign)[0]
+
+            hypixel_data = API.get_hypixel(self, uuid)
+
+            if "monthlyPackageRank" in hypixel_data['player']:
+                if hypixel_data['player']['monthlyPackageRank'] != 'NONE':
+                    return 1
+                else:
+                    return 0
+            else:
+                return 0
+        
+        def get_staff(self, ign: str):
+
+            uuid = API.get_uuid(self, ign)[0]
+
+            hypixel_data = API.get_hypixel(self, uuid)
+
+            if 'rank' in hypixel_data['player']:
+                return hypixel_data["player"]["rank"]
+            else:
+                return 0
+            
+        
+        def rank(self, ign: str) -> str:
+            rank = ''
+            
+            if Calcs.Rank.get_staff(self, ign) != 0:
+                rank = str(Calcs.Rank.get_staff(self, ign))
+            else:
+                    if Calcs.Rank.get_sub(self, ign) == 1:
+                        rank = 'MVP++'
+                    else:
+                        if Calcs.Rank.get_rank(self, ign) != 0:
+                            rank = str(Calcs.Rank.get_rank(self, ign))
+                            if '_PLUS' in rank:
+                                rank = rank.replace('_PLUS', '+')
+                            else:
+                                pass
+                        else:
+                            rank = 'Member'
+
+            return rank
+
+    class Get_Tier:
+        
+        # conver to list type
+        def __init__(self) -> None:
+            self.r_star = json.loads(tiers['star'])
+            self.r_fkdr = json.loads(tiers['fkdr'])
+            self.r_finals = json.loads(tiers['finals'])
+            self.r_kills = json.loads(tiers['kills'])
+            self.r_beds = json.loads(tiers['beds'])
+            self.r_games = json.loads(tiers['games'])
+
+        def get_closest(self, ign: str) -> List[int]:
+            stats = Calcs.get_stats(self, ign)
+
+            # c = closest
+            c_star = min(self.r_star, key=(lambda list_value : abs(list_value - stats[0])))
+            c_fkdr = min(self.r_fkdr, key=(lambda list_value : abs(list_value - stats[8])))
+            c_finals = min(self.r_finals, key=(lambda list_value : abs(list_value - stats[7])))
+            c_kills = min(self.r_kills, key=(lambda list_value : abs(list_value - stats[2])))
+            c_beds = min(self.r_beds, key=(lambda list_value : abs(list_value - stats[6])))
+            c_games = min(self.r_games, key=(lambda list_value : abs(list_value - stats[5])))
+
+            stats_set = [
+                self.r_star.index(c_star),
+                self.r_fkdr.index(c_fkdr),
+                self.r_finals.index(c_finals),
+                self.r_kills.index(c_kills),
+                self.r_beds.index(c_beds),
+                self.r_games.index(c_games)
+                ]
+            return [stats_set, round(mean(stats_set),0)]
+
+        def get_difference(self, ign: str) -> list:
+            stats = Calcs.get_stats(self, ign)
+            dr_star = 0
+            dr_fkdr = 0
+            dr_finals = 0
+            dr_kills = 0
+            dr_beds = 0
+            dr_games = 0
+            d_star = 0
+            d_fkdr = 0
+            d_finals = 0
+            d_kills = 0
+            d_beds = 0
+            d_games = 0
+
+            # d = difference
+            
+            # relative tier - stat to each closest rank
+            closest_relatives = Calcs.Get_Tier.get_closest(self, ign)[0]
+            try:
+                dr_star = round(stats[0]/self.r_star[closest_relatives[0]],2)
+                dr_fkdr = round(stats[8]/self.r_fkdr[closest_relatives[1]],2)
+                dr_finals = round(stats[7]/self.r_finals[closest_relatives[2]],2)
+                dr_kills = round(stats[2]/self.r_kills[closest_relatives[3]],2)
+                dr_beds = round(stats[6]/self.r_beds[closest_relatives[4]],2)
+                dr_games = round(stats[5]/self.r_games[closest_relatives[5]],2)
+            except:
+                pass
+
+            closest_rank = int(Calcs.Get_Tier.get_closest(self, ign)[1])
+
+            d_star = round(stats[0]/self.r_star[closest_rank],2)
+            d_fkdr = round(stats[8]/self.r_fkdr[closest_rank],2)
+            d_finals = round(stats[7]/self.r_finals[closest_rank],2)
+            d_kills = round(stats[2]/self.r_kills[closest_rank],2)
+            d_beds = round(stats[6]/self.r_beds[closest_rank],2)
+            d_games = round(stats[5]/self.r_games[closest_rank],2)
+
+            stats_set = [
+                dr_star,
+                dr_fkdr,
+                dr_finals,
+                dr_kills,
+                dr_beds, 
+                dr_games,
+                d_star,
+                d_fkdr,
+                d_finals,
+                d_kills,
+                d_beds, 
+                d_games
+            ]
+
+            return [stats_set, round(mean(stats_set[:6]),2), round(mean(stats_set[6:]),2)]
+
+        def to_romans(self, tier: str) -> str:
+            romans = ["I","II","III","IV","V","VI","VII"]
+            return str(f"[Tier {romans[tier-1]}]")
+
+
 
 def setup(bot):
     bot.add_cog(Calcs(bot))

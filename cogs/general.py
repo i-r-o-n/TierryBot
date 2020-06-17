@@ -1,25 +1,15 @@
 import discord
 from discord.ext import commands
-import requests
-from cogs.admin import hypixel_key
+
+import json
+
+from cogs.admin import roles
+from cogs.calcs import Calcs
+from cogs.api import API
 
 class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-
-    #retrieve player rank
-    def RetrieveRank(self, ign):
-        data = requests.get(f"https://api.hypixel.net/player?key={hypixel_key}&name={ign}").json()
-        try:
-            return data["player"]["newPackageRank"] #if ["newPackageRank"] in ['newPackageRank']["player"] else 0
-        except:
-            return 0
-        
-    def RetrieveSubscriptionStatus(self, ign):
-        data = requests.get(f"https://api.hypixel.net/player?key={hypixel_key}&name={ign}").json()
-        #return data["player"]["monthlyPackageRank"] if "monthlyPackageRank" in data["player"] else 0
-        return 1 if "monthlyPackageRank" in data["player"] else 0
 
     @commands.command(name='ping', aliases=['p'])
     @commands.guild_only()
@@ -31,18 +21,6 @@ class General(commands.Cog):
         )
         await ctx.trigger_typing()
         await ctx.send(embed=embed)
-
-    @commands.command(name='info', aliases=['botinfo'])
-    @commands.guild_only()
-    async def general_info(self, ctx):
-        info = (f'Proprietary Bot')
-        embed = discord.Embed(
-            color=discord.Color.blurple(),
-            description=info
-        )
-        await ctx.trigger_typing()
-        await ctx.send(embed=embed)
-
 
     @commands.command(name='perms', aliases=['perms_for', 'permissions'])
     @commands.guild_only()
@@ -59,66 +37,89 @@ class General(commands.Cog):
 
         await ctx.send(content=None, embed=embed)
 
-    # EDIT!
-    @commands.command(name='verify',aliases=['v'])
+
+    @commands.command(name='verify', aliases=['v'])
     async def verify(self, ctx, ign: str=None, member: discord.Member=None):
-        log = open("log.txt","a")
+        await ctx.trigger_typing()
+
+        global roles
 
         if ign == None:
             ign = ctx.author.nick
+            ign = Calcs.get_nick(self, ign)
             await ctx.send(f"using ign: {ign}")
 
         if member == None:
             member = ctx.author
 
-        role = discord.utils.get(ctx.guild.roles, id=698403490086518794)
-        #test server role id: 699089356501286923
 
-        rank = General.RetrieveRank(self, ign)
-        #rank role ids
-        rank_role = 661937723501969410
+        v_role = discord.utils.get(ctx.guild.roles, id=int(roles['verify']))
+        rank = str(Calcs.Rank.rank(self, ign).lower())
+        
+        rank_role = None
 
-        if rank == 'VIP':
-            rank_role = 661937723136933889
-        elif rank == 'VIP_PLUS':
-            rank_role = 661937723099185165
-        elif rank == 'MVP':
-            rank_role = 661937722545537033
-        elif rank == 'MVP_PLUS':
-            rank_role = 661937722403061769
-        else:
-            pass
+        try:
+            rank_role = int(roles[rank])
+        except:
+            rank_role = int(roles['member'])
 
         rank_role = discord.utils.get(ctx.guild.roles, id=rank_role)
 
-        if General.RetrieveSubscriptionStatus(self, ign) == 1:
-            sub_role = discord.utils.get(ctx.guild.roles, id=661937722029768714)
+        if Calcs.Rank.get_sub(self, ign) == 1:
+            sub_role = discord.utils.get(ctx.guild.roles, id=int(roles['mvp++']))
             await member.add_roles(sub_role)
+            await member.add_roles(discord.utils.get(ctx.guild.roles, id=int(roles['mvp+'])))
         else:
             pass
 
         embed = discord.Embed(
             color=discord.Color.orange(),
-            description=f"Verified: {ign}\n{role} {General.RetrieveRank(self, ign)}",
+            description=f"Verified: {ign}\n{v_role} {rank}",
         )
 
-        await ctx.trigger_typing()
-        await ctx.send(embed=embed)
-
-        await member.add_roles(role)
+        await member.add_roles(v_role)
         await member.add_roles(rank_role)
         #NOTE bot cannot change nick of admins
         await member.edit(nick=ign)
 
-        log.write(f"\nV, {member}, {ign}")
-        log.close()
+        await ctx.send(embed=embed)
 
     @verify.error
     async def verify_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send('I could not find that member...')
+            await ctx.send('Verify **`ERROR`** | I could not find that member...')
         if isinstance(error, commands.CommandInvokeError):
-            await ctx.send('Do you have **ADMIN** permissions?\nCannot change nicknames of **ADMIN** users')
+            await ctx.send('Verify **`ERROR`** | \nDo you have **ADMIN** permissions?\nCannot change nicknames of **ADMIN** users\nOtherwise, invalid username')
+    
+    @commands.command(name='send', aliases=['s'], hidden=True)
+    async def send(self, ctx, keys:list, values:list, title):
+        await ctx.trigger_typing()
+
+        if type(keys) != list:
+            keys = json.loads(keys)
+
+        if type(values) != list:
+            values = json.loads(values)
+
+        embed = discord.Embed(
+                title = title,
+                description = "\uFEFF",
+                colour = discord.Color.greyple()
+        )
+        for i in range(len(keys)):
+            if keys[i] == ' ':
+                embed.add_field(
+                    name="\uFEFF",
+                    value='\uFEFF',
+                    inline=False
+                    )
+            else:
+                embed.add_field(
+                name=keys[i],
+                value=f'`{values[i]}`',
+                )
+
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(General(bot))

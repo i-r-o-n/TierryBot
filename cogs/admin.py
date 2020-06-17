@@ -1,16 +1,22 @@
+import discord
 from discord.ext import commands
+
+import datetime
 import json
 
-#a json file is used for api keys and tokens.
+# a json file is used for api keys and tokens.
 with open('secrets.json') as f:
-    confidentials = json.load(f)
+    secrets = json.load(f)
 
-hypixel_key = confidentials['Hypixel Key']
+hypixel_key = secrets['Hypixel API Key']
+token = secrets['Discord Bot Token']
 
-with open('secrets.json') as f:
-    TOKEN = json.load(f)
+with open('roles.json') as f:
+    roles = json.load(f)
 
-TOKEN = TOKEN['TOKEN']
+with open('tiers.json') as f:
+    tiers = json.load(f)
+
 
 class Admin(commands.Cog):
 
@@ -22,8 +28,6 @@ class Admin(commands.Cog):
     @commands.command(name='load', hidden=True)
     @commands.is_owner()
     async def load_cog(self, ctx, *, cog: str):
-        """Command which Loads a Module.
-        Remember to use dot path. e.g: cogs.owner"""
 
         if cog[0:5] == 'cogs.':
             cog = cog[5:len(cog)]
@@ -40,8 +44,6 @@ class Admin(commands.Cog):
     @commands.command(name='unload', hidden=True)
     @commands.is_owner()
     async def unload_cog(self, ctx, *, cog: str):
-        """Command which Unloads a Module.
-        Remember to use dot path. e.g: cogs.admin"""
 
         if cog[0:5] == 'cogs.':
             cog = cog[5:len(cog)]
@@ -58,10 +60,7 @@ class Admin(commands.Cog):
     @commands.command(name='reload', hidden=True)
     @commands.has_permissions(administrator=True)
     async def reload_cog(self, ctx, *, cog: str):
-        """Command which Reloads a Module.
-        Remember to use dot path. e.g: cogs.admin"""
-        log = open("admin_log.txt","a")
-        
+
         if cog[0:5] == 'cogs.':
             cog = cog[5:len(cog)]
         else:
@@ -75,9 +74,12 @@ class Admin(commands.Cog):
         else:
             await ctx.send('**`SUCCESS`**')
 
-        log.write(f"\nR, {cog}")
-        log.close()
-
+    @commands.command(name='kill', hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def kill(self, ctx):
+        await ctx.send(f"[{datetime.datetime.now()}] Shutting Down command from {ctx.author}\n")
+        await ctx.send("shutting down...")
+        return await ctx.bot.logout()
 
 def setup(bot):
     bot.add_cog(Admin(bot))
