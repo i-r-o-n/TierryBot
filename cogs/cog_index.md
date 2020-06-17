@@ -14,7 +14,6 @@ sends summative error messages directly to discord
 ##### General
 commands:
 - ping
-- bot info
 - permissions
 - verify (server specific)
 
@@ -23,6 +22,3 @@ rank calculation calls from players
 
 ##### Party
 hypixel party command simulation
-
-##### Tests
-mainly tier test commands
