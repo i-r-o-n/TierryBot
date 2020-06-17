@@ -6,10 +6,11 @@ Tier Calculation/Research - https://docs.google.com/spreadsheets/d/1XqQEhTdC8Q2O
 Package Requistites:
 * Discord - https://discordpy.readthedocs.io/en/latest/
 * Logging
-* traceback
+* datetime
 * json
 * requests
 * statistics
+* List
 
 Some code inspired from:
 https://github.com/jacklee1792/BWBot/blob/master/bwbot.py
