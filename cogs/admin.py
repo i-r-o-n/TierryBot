@@ -8,8 +8,18 @@ import json
 with open('secrets.json') as f:
     secrets = json.load(f)
 
-hypixel_key = secrets['Hypixel API Key']
+class Key:
+    global secrets
+
+    hypixel_key = secrets['Hypixel API Key']
+    key_index_len = len(hypixel_key.keys())
+
+    def get_key(self, index:int, hypixel_key=hypixel_key) -> str:
+        hypixel_key = hypixel_key[str(index)]
+        return hypixel_key
+
 token = secrets['Discord Bot Token']
+
 
 with open('roles.json') as f:
     roles = json.load(f)

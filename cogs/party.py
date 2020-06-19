@@ -2,10 +2,7 @@ import discord
 from discord.ext import commands
 from datetime import datetime
 
-from discord.member import flatten_user
-
 from cogs.api import API
-from cogs.admin import hypixel_key
 from cogs.admin import roles
 from cogs.calcs import Calcs
 
@@ -38,6 +35,9 @@ class Party(commands.Cog):
 
         hypixel_data = API.get_hypixel(self, uuid)
         if not bool(hypixel_data["success"]):
+            if hypixel_data["cause"] == 'Invalid API key':
+                await ctx.send("Invalid API Key")
+            
             await ctx.send(ctx.message.author.mention)
             return await ctx.send(embed=discord.Embed(description = f'The player "{ign}" doesn\'t exist or has not logged on to Hypixel before!'))
 
@@ -113,12 +113,12 @@ class Party(commands.Cog):
         await ctx.send(ctx.message.author.mention)
         return await ctx.send(embed=embed)
 
-    @status.error
-    async def status_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-           await ctx.send('Status **`ERROR`** | Status takes one argument: Username')
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send('Status **`ERROR`** | This might be an outdated or invalid username.')
+    #@status.error
+    #async def status_error(self, ctx, error):
+    #    if isinstance(error, commands.MissingRequiredArgument):
+    #       await ctx.send('Status **`ERROR`** | Status takes one argument: Username')
+    #    if isinstance(error, commands.CommandInvokeError):
+    #        await ctx.send('Status **`ERROR`** | This might be an outdated or invalid username.')
 
 def setup(bot):
     bot.add_cog(Party(bot))

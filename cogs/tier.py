@@ -37,41 +37,60 @@ class Tier(commands.Cog):
             icon_url = image
         )
 
+        stats = Calcs.get_stats(self, ign)
+
+        fkdr = stats[8]
+        finals = stats[7]
+
+        next_fkdr = 1
+        while fkdr >= 1:
+            fkdr -= 1
+            next_fkdr += 1
+
+        finals_reqd = round(next_fkdr*(stats[7]/stats[8]) - finals, 0)
+        
+
         embed.set_thumbnail(url = image_full)
         embed.add_field(
             name="Stars",
-            value=f'`{Calcs.get_stats(self, ign)[0]}`',
+            value=f'`{stats[0]}`',
             inline=True
             )
         embed.add_field(
             name="FKDR | Finals / Final Deaths",
-            value=f'`{Calcs.get_stats(self, ign)[1]}`',
+            value=f'`{stats[1]}`',
+            inline=True
+            )
+        embed.add_field(
+            name="Finals until next FKDR",
+            # [stars, fkdr, kills, winrate, winstreak, games, beds, final_kills, fkdr_raw]
+            value=f'`{finals_reqd}`',
             inline=True
             )
         embed.add_field(
             name="Kills",
-            value=f'`{Calcs.get_stats(self, ign)[2]}`',
+            value=f'`{stats[2]}`',
             inline=True
             )
         embed.add_field(
             name="Games Played",
-            value=f'`{Calcs.get_stats(self, ign)[5]}`',
+            value=f'`{stats[5]}`',
             inline=True
             )
         embed.add_field(
             name="Beds Broken",
-            value=f'`{Calcs.get_stats(self, ign)[6]}`',
+            value=f'`{stats[6]}`',
             inline=True
             )
 
         embed.add_field(
             name="Winrate",
-            value=f'`{Calcs.get_stats(self, ign)[3]}`',
+            value=f'`{stats[3]}`',
             inline=False
             )
         embed.add_field(
             name="Winstreak",
-            value=f'`{Calcs.get_stats(self, ign)[4]}`',
+            value=f'`{stats[4]}`',
             inline=False
             )
     
@@ -248,21 +267,22 @@ class Tier(commands.Cog):
 
     @commands.command(name='tier', aliases=['t'])
     #@commands.has_permissions(kick_members=True)
-    async def tier(self, ctx, ign: str=None, member: discord.Member=None, get: str=None):
+    async def tier(self, ctx, get: str=None, ign: str=None, member: discord.Member=None):
         await ctx.trigger_typing()
 
         global roles
 
         Calcs.Get_Tier.__init__(self)
 
+        on_self = False
         if ign == None:
             ign = ctx.author.nick
             ign = Calcs.get_nick(self, ign)
             await ctx.send(f"using ign: {ign}")
+            on_self = True
 
         if member == None:
             member = ctx.author
-
 
         await ctx.send(embed=discord.Embed(
             color=discord.Color.dark_red(),
@@ -296,7 +316,7 @@ class Tier(commands.Cog):
         await ctx.send(embed=embed)
         
         if str(get).lower() == "y" or str(get).lower() == "yes":
-            if ctx.message.author.guild_permissions.kick_members:
+            if ctx.message.author.guild_permissions.kick_members or on_self == True:
                 await ctx.send(ctx.author.mention + f', assigning you `{str(Calcs.Get_Tier.to_romans(self, int(closest_rank)))}`!')
                 for i in range(len(rank_roles)):
                     await member.remove_roles(discord.utils.get(member.guild.roles, name=rank_roles[i]))
@@ -306,6 +326,13 @@ class Tier(commands.Cog):
                 await ctx.send(ctx.author.mention + f', you have insufficient permissions to assign this role.')
         else:
             pass
+
+    @tier.error
+    async def tier_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send('Tier **`ERROR`** | Are you inputting all arguments? Otherwise, I could not find that member.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.t <yes|y - (any other single arg.)> [ign=self] [member=self]\n```')
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Tier **`ERROR`** | Are you inputting all arguments? Otherwise, invalid username.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.t <yes|y - (any other single arg.)> [ign=self] [member=self]\n```')
 
     # update nick w/ stars prefix
     @commands.Cog.listener()
@@ -343,8 +370,6 @@ class Tier(commands.Cog):
             except discord.errors.Forbidden:
                 # Cannot change nick of admins
                 pass
-
-    
 
 
 def setup(bot):

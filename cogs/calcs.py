@@ -6,7 +6,7 @@ from statistics import mean
 import json
 
 from cogs.api import API
-from cogs.admin import hypixel_key, tiers
+from cogs.admin import tiers
 
 class Calcs(commands.Cog):
     def __init__(self, bot):

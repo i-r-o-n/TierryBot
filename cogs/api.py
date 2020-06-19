@@ -1,16 +1,24 @@
 from discord.ext import commands
 
-
+import random
 import requests
 import json
 
-from cogs.admin import hypixel_key
+from cogs.admin import Key
+
+i = 0
 
 class API(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	def get_hypixel(self, uuid, hypixel_key=hypixel_key, data='player'):
+	def get_hypixel(self, uuid, hypixel_key=None, data='player'):
+
+		global i
+		i += 1
+		i %= Key.key_index_len
+
+		hypixel_key = Key.get_key(self, i)
 		response =  None
 		try:
 			response = requests.get(f'https://api.hypixel.net/{data}?key={hypixel_key}&uuid={uuid}')
