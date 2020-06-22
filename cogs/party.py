@@ -113,12 +113,12 @@ class Party(commands.Cog):
         await ctx.send(ctx.message.author.mention)
         return await ctx.send(embed=embed)
 
-    #@status.error
-    #async def status_error(self, ctx, error):
-    #    if isinstance(error, commands.MissingRequiredArgument):
-    #       await ctx.send('Status **`ERROR`** | Status takes one argument: Username')
-    #    if isinstance(error, commands.CommandInvokeError):
-    #        await ctx.send('Status **`ERROR`** | This might be an outdated or invalid username.')
+    @status.error
+    async def status_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+           await ctx.send('Status **`ERROR`** | Status takes one argument: Username')
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Status **`ERROR`** | This might be an outdated or invalid username.')
 
 def setup(bot):
     bot.add_cog(Party(bot))

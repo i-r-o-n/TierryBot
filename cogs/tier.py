@@ -333,11 +333,21 @@ class Tier(commands.Cog):
             await ctx.send('Tier **`ERROR`** | Are you inputting all arguments? Otherwise, I could not find that member.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.t <yes|y - (any other single arg.)> [ign=self] [member=self]\n```')
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Tier **`ERROR`** | Are you inputting all arguments? Otherwise, invalid username.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.t <yes|y - (any other single arg.)> [ign=self] [member=self]\n```')
-
+    i = 0
     # update nick w/ stars prefix
     @commands.Cog.listener()
     async def on_message(self, ctx):
         global roles
+        i = Tier.i
+        colors = [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0067FF, 0xB600FF]
+        role = discord.utils.get(ctx.guild.roles, id=int(722237147972894771))
+        if role in ctx.author.roles:
+            i += 1
+            i %= len(colors)
+            try:
+                await role.edit(colors[i])
+            except:
+                pass
 
         if not ctx.content.startswith('.') and ctx.author.bot == False:
             try:
