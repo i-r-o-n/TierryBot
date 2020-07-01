@@ -189,6 +189,13 @@ class Tier(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @closest_rank.error
+    async def closest_rank_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send('Closest Rank **`ERROR`** | Are you inputting all arguments? Otherwise, I could not find that member.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.cr <ign>\n```')
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Closest Rank **`ERROR`** | Are you inputting all arguments? Otherwise, invalid username.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.cr <ign>\n```')
+
     @commands.command(name='rank_difference', aliases=['rd'])
     async def rank_difference(self, ctx, ign):
         await ctx.trigger_typing()
@@ -265,6 +272,14 @@ class Tier(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @rank_difference.error
+    async def rank_difference_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send('Rank Difference **`ERROR`** | Are you inputting all arguments? Otherwise, I could not find that member.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.rd <ign>\n```')
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Rank Difference **`ERROR`** | Are you inputting all arguments? Otherwise, invalid username.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.rd <ign>\n```')
+
+
     @commands.command(name='tier', aliases=['t'])
     #@commands.has_permissions(kick_members=True)
     async def tier(self, ctx, get: str=None, ign: str=None, member: discord.Member=None):
@@ -317,7 +332,7 @@ class Tier(commands.Cog):
         
         if str(get).lower() == "y" or str(get).lower() == "yes":
             if ctx.message.author.guild_permissions.kick_members or on_self == True:
-                await ctx.send(ctx.author.mention + f', assigning you `{str(Calcs.Get_Tier.to_romans(self, int(closest_rank)))}`!')
+                await ctx.send(ctx.author.mention + f', assigning **{member.display_name}** `{str(Calcs.Get_Tier.to_romans(self, int(closest_rank)))}`!')
                 for i in range(len(rank_roles)):
                     await member.remove_roles(discord.utils.get(member.guild.roles, name=rank_roles[i]))
 

@@ -16,7 +16,7 @@ class Party(commands.Cog):
             embed = discord.Embed(
                 color=discord.Color.blue(),
                 title='Party Tag',
-                description="All members searching for parties:"
+                description="All members searching for parties:\nhttps://hypixel.net/forums/bed-wars.138/"
             )
 
             for member in ctx.guild.members:

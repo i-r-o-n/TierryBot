@@ -17,16 +17,38 @@ class API(commands.Cog):
 		global i
 		i += 1
 		i %= Key.key_index_len
-
 		hypixel_key = Key.get_key(self, i)
 		response =  None
-		try:
-			response = requests.get(f'https://api.hypixel.net/{data}?key={hypixel_key}&uuid={uuid}')
-			response = json.loads(response.text)
-		except:
-			pass
+
+		response = requests.get(f'https://api.hypixel.net/{data}?key={hypixel_key}&uuid={uuid}')
+		response = json.loads(response.text)
 		return response
 
+	def get_key_info(self, key):
+		response = requests.get(f"https://api.hypixel.net/key?key={key}")
+		response = json.loads(response.text)
+
+		key_info = None
+		
+		if response['success'] == True:
+			data = response['record']
+			key_info = [data['key'], data['owner'], data['totalQueries'], data['queriesInPastMin'], data['limit']]
+		else:
+			key_info = [False, "Invalid API Key!", key]
+
+		return key_info
+
+	def get_namemc(self, user):
+		return f"namemc.com/profile/{user}"
+
+	def get_ign(self, uuid):
+		response = requests.get(f"https://api.mojang.com/user/profiles/{uuid}/names")
+		response = json.loads(response.text)
+		try:
+			ign = response[-1]['name']
+		except:
+			ign = '?'
+		return ign
 
 	def get_uuid(self, ign):
 		response = requests.get(f'https://api.mojang.com/users/profiles/minecraft/{ign}')
