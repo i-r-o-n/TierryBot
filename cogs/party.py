@@ -10,7 +10,7 @@ class Party(commands.Cog):
 
     @commands.command(name='party', aliases=['pl'])
     async def party_list(self, ctx):
-            await ctx.send("For some reason, this command is not optimized through discord.py. This command takes an ridiculously long time.")
+            await ctx.send("For some reason, this command is not optimized through discord.py. This command takes a ridiculously long time.")
 
             global roles
             role = discord.utils.get(ctx.guild.roles, id=int(roles['party']))
@@ -24,7 +24,7 @@ class Party(commands.Cog):
                 if role in member.roles:
                     members += f"{member.display_name}\n"
             
-            
+
             embed = discord.Embed(
                 color=discord.Color.blue(),
                 title='Party Tag',
