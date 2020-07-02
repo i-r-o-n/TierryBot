@@ -10,21 +10,31 @@ class Party(commands.Cog):
 
     @commands.command(name='party', aliases=['pl'])
     async def party_list(self, ctx):
+            await ctx.send("For some reason, this command is not optimized through discord.py. This command takes an ridiculously long time.")
+
             global roles
             role = discord.utils.get(ctx.guild.roles, id=int(roles['party']))
 
+            await ctx.trigger_typing()
+
+            members = ""
+
+            for member in ctx.guild.members:
+                await ctx.trigger_typing()
+                if role in member.roles:
+                    members += f"{member.display_name}\n"
+            
+            
             embed = discord.Embed(
                 color=discord.Color.blue(),
                 title='Party Tag',
                 description="All members searching for parties:\nhttps://hypixel.net/forums/bed-wars.138/"
             )
 
-            for member in ctx.guild.members:
-                if role in member.roles:
-                    embed.add_field(name=f"{member}", value=member.nick, inline=False)
+            embed.add_field(name=f"\uFEFF", value=members, inline=False)
 
             embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
-            await ctx.trigger_typing()
+            
             await ctx.send(embed=embed)
 
     @commands.command(name="status")
