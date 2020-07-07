@@ -7,6 +7,7 @@ from cogs.calcs import Calcs
 from cogs.api import API
 
 from cogs.admin import roles
+from cogs.admin import tiers
 
 class Tier(commands.Cog):
     def __init__(self, bot):
@@ -39,15 +40,15 @@ class Tier(commands.Cog):
 
         stats = Calcs.get_stats(self, ign)
 
-        fkdr = stats[8]
-        finals = stats[7]
+        fkdr = stats[1]
+        finals = stats[2]
 
         next_fkdr = 1
         while fkdr >= 1:
             fkdr -= 1
             next_fkdr += 1
 
-        finals_reqd = round(next_fkdr*(stats[7]/stats[8]) - finals, 0)
+        finals_reqd = round(next_fkdr*(stats[2]/stats[1]) - finals, 0)
         
 
         embed.set_thumbnail(url = image_full)
@@ -58,18 +59,23 @@ class Tier(commands.Cog):
             )
         embed.add_field(
             name="FKDR | Finals / Final Deaths",
-            value=f'`{stats[1]}`',
+            value=f'`{stats[8]}`',
             inline=True
             )
         embed.add_field(
-            name="Finals until next FKDR",
-            # [stars, fkdr, kills, winrate, winstreak, games, beds, final_kills, fkdr_raw]
-            value=f'`{finals_reqd}`',
+            name="Finals until next FKDR | Projected Games to Achieve",
+            # [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
+            value=f'`{int(finals_reqd)}` | `{int(round(finals_reqd/((stats[1]+next_fkdr)/2),0))}`',
             inline=True
             )
         embed.add_field(
             name="Kills",
-            value=f'`{stats[2]}`',
+            value=f'`{stats[3]}`',
+            inline=True
+            )
+        embed.add_field(
+            name="Beds Broken",
+            value=f'`{stats[4]}`',
             inline=True
             )
         embed.add_field(
@@ -77,20 +83,15 @@ class Tier(commands.Cog):
             value=f'`{stats[5]}`',
             inline=True
             )
-        embed.add_field(
-            name="Beds Broken",
-            value=f'`{stats[6]}`',
-            inline=True
-            )
 
         embed.add_field(
             name="Winrate",
-            value=f'`{stats[3]}`',
+            value=f'`{stats[6]}`',
             inline=False
             )
         embed.add_field(
             name="Winstreak",
-            value=f'`{stats[4]}`',
+            value=f'`{stats[7]}`',
             inline=False
             )
     
@@ -156,35 +157,14 @@ class Tier(commands.Cog):
             )
 
         embed.set_thumbnail(url = image_full)
-        embed.add_field(
-            name="Stars",
-            value=f'`{str(closest_stat[0][0])}`',
-            inline=True
-            )
-        embed.add_field(
-            name="FKDR",
-            value=f'`{str(closest_stat[0][1])}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Finals",
-            value=f'`{str(closest_stat[0][2])}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Kills",
-            value=f'`{str(closest_stat[0][3])}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Beds",
-            value=f'`{str(closest_stat[0][4])}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Games",
-            value=f'`{str(closest_stat[0][5])}`',
-            inline=True
+
+        names = ["Stars", "FKDR", "Finals", "Kills", "Beds", "Games"]
+
+        for i in range(len(names)):
+            embed.add_field(
+                name=names[i],
+                value=f'`{str(closest_stat[0][i])}`',
+                inline=True
             )
 
         await ctx.send(embed=embed)
@@ -197,7 +177,7 @@ class Tier(commands.Cog):
             await ctx.send('Closest Rank **`ERROR`** | Are you inputting all arguments? Otherwise, invalid username.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.cr <ign>\n```')
 
     @commands.command(name='rank_difference', aliases=['rd'])
-    async def rank_difference(self, ctx, ign):
+    async def rank_difference(self, ctx, ign: str, stat: str=None):
         await ctx.trigger_typing()
 
         if ign == None:
@@ -219,56 +199,110 @@ class Tier(commands.Cog):
 
         stat_difference = Calcs.Get_Tier.get_difference(self, Calcs.get_nick(self, ign))
 
-        embed = discord.Embed(
-                title = "Rank Difference",
-                description = "\uFEFF",
-                colour = discord.Color.orange()
-        )
-        embed.set_author(
-            name = ign,
-            icon_url = image
-        )
-        embed.add_field(
-            name="Overall Rank Difference\nrelative | overall",
-            value=f'`{str(stat_difference[1])}` | `{str(stat_difference[2])}`',
-            )
-        embed.add_field(
-            name="\uFEFF",
-            value='\uFEFF',
-            inline=False
-            )
+        stat_value_difference = Calcs.Get_Tier.get_next_difference(self, Calcs.get_nick(self, ign))
 
-        embed.set_thumbnail(url = image_full)
-        embed.add_field(
-            name="Stars\nrelative | overall",
-            value=f'`{str(stat_difference[0][0])}` | `{str(stat_difference[0][6])}`',
-            inline=True
+        if stat == None:
+
+            embed = discord.Embed(
+                    title = "Rank Difference",
+                    description = "\uFEFF",
+                    colour = discord.Color.orange()
             )
-        embed.add_field(
-            name="FKDR\nrelative | overall",
-            value=f'`{str(stat_difference[0][1])}` | `{str(stat_difference[0][7])}`',
-            inline=True
+            embed.set_author(
+                name = ign,
+                icon_url = image
             )
-        embed.add_field(
-            name="Finals\nrelative | overall",
-            value=f'`{str(stat_difference[0][2])}` | `{str(stat_difference[0][8])}`',
-            inline=True
+            embed.add_field(
+                name="Overall Rank Difference\nrelative | overall",
+                value=f'`{str(stat_difference[1])}` | `{str(stat_difference[2])}`',
+                )
+            embed.add_field(
+                name="\uFEFF",
+                value='\uFEFF',
+                inline=False
+                )
+
+            embed.set_thumbnail(url = image_full)
+            embed.add_field(
+                name="Stars\nrelative | overall",
+                value=f'`{str(stat_difference[0][0])}` | `{str(stat_difference[0][6])}`',
+                inline=True
+                )
+            embed.add_field(
+                name="FKDR\nrelative | overall",
+                value=f'`{str(stat_difference[0][1])}` | `{str(stat_difference[0][7])}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Finals\nrelative | overall",
+                value=f'`{str(stat_difference[0][2])}` | `{str(stat_difference[0][8])}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Kills\nrelative | overall",
+                value=f'`{str(stat_difference[0][3])}` | `{str(stat_difference[0][9])}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Beds\nrelative | overall",
+                value=f'`{str(stat_difference[0][4])}` | `{str(stat_difference[0][10])}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Games",
+                value=f'`{str(stat_difference[0][5])}` | `{str(stat_difference[0][11])}`',
+                inline=True
+                )
+
+        else:
+            await ctx.send(f"Interpreting \"{stat}\"...")
+            await ctx.trigger_typing()
+
+            # convert user input into usable index
+
+            return_values = True
+
+            stat_index = 0
+            # Stats function: return [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
+            stat_index_names = ['Stars', 'FKDR', 'Final Kills', 'Kills', 'Beds', 'Games', 'Winrate', 'Winstreak', 'Final Kills / Deaths']
+            # Stats value difference function: [star, fkdr, finals, kills, beds, games]
+
+            if "star" in stat.lower():
+                stat_index = 0
+            elif "fkdr" in stat.lower():
+                stat_index = 1
+            elif "final" in stat.lower():
+                stat_index = 2
+            elif "kill" in stat.lower():
+                # kills input tested after finals in the case of 'final kills' input
+                stat_index = 3
+            elif "bed" in stat.lower():
+                stat_index = 4
+            elif "game" in stat.lower():
+                stat_index = 5
+            else:
+                await ctx.send(f"Unable to interpret: \"{stat}\".")
+                return_values = False
+
+            stat_values = Calcs.get_stats(self, Calcs.get_nick(self, ign))
+            closest_tier  = Calcs.Get_Tier.get_closest(self, Calcs.get_nick(self, ign))
+
+            embed = discord.Embed(
+                    title = "Value to Next Rank",
+                    description = "\uFEFF",
+                    colour = discord.Color.dark_gold()
             )
-        embed.add_field(
-            name="Kills\nrelative | overall",
-            value=f'`{str(stat_difference[0][3])}` | `{str(stat_difference[0][9])}`',
-            inline=True
+            embed.set_author(
+                name = ign,
+                icon_url = image
             )
-        embed.add_field(
-            name="Beds\nrelative | overall",
-            value=f'`{str(stat_difference[0][4])}` | `{str(stat_difference[0][10])}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Games",
-            value=f'`{str(stat_difference[0][5])}` | `{str(stat_difference[0][11])}`',
-            inline=True
-            )
+            if return_values == True:
+                closest_tier_value = closest_tier[0][stat_index]
+                embed.add_field(
+                    name=f"{stat_index_names[stat_index]} Value @ {closest_tier_value} | Amount Needed for Next Rank: {closest_tier_value+1}",
+                    value=f'`{str(stat_values[stat_index])}` | `{str(stat_value_difference[stat_index])}`',
+                    )
+
 
         await ctx.send(embed=embed)
 
@@ -348,6 +382,8 @@ class Tier(commands.Cog):
             await ctx.send('Tier **`ERROR`** | Are you inputting all arguments? Otherwise, I could not find that member.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.t <yes|y - (any other single arg.)> [ign=self] [member=self]\n```')
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Tier **`ERROR`** | Are you inputting all arguments? Otherwise, invalid username.\n```\n<required> [optional]\n```\n```\nCommand Example:\n.t <yes|y - (any other single arg.)> [ign=self] [member=self]\n```')
+    
+    
     i = 0
     # update nick w/ stars prefix
     @commands.Cog.listener()
@@ -396,6 +432,25 @@ class Tier(commands.Cog):
                 # Cannot change nick of admins
                 pass
 
+    
+    @commands.command(name='view_tier', aliases=['vt'])
+    async def view_tier(self, ctx):
+        await ctx.trigger_typing()
+        global tiers
+        embed = discord.Embed(
+            color=discord.Color.greyple(),
+            description=f"Tier Levels",
+        )
+
+        print(tiers)
+
+        embed.add_field(name="x", value=f"x", inline=False)
+        embed.add_field(name="x", value=f"x", inline=False)
+        embed.add_field(name="x", value=f"x")
+
+        embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
+
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Tier(bot))

@@ -1,4 +1,4 @@
-##Heroku Hosting Commands
+Heroku Hosting Commands
 
 heroku login
 

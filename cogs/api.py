@@ -62,6 +62,9 @@ class API(commands.Cog):
 			raise ValueError('Invalid username')
 		return (uuid, ign)
 
+	def get_guild(self, ign):
+		pass
+
 def setup(bot):
     bot.add_cog(API(bot))
 

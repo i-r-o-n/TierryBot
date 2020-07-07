@@ -74,7 +74,7 @@ class Calcs(commands.Cog):
         except:
             kills = '?'
 
-        return [stars, fkdr, kills, winrate, winstreak, games, beds, final_kills, fkdr_raw]
+        return [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
 
     def get_socials(self, ign: str):
         
@@ -176,36 +176,52 @@ class Calcs(commands.Cog):
         
         # conver to list type
         def __init__(self) -> None:
-            self.r_star = json.loads(tiers['star'])
-            self.r_fkdr = json.loads(tiers['fkdr'])
-            self.r_finals = json.loads(tiers['finals'])
-            self.r_kills = json.loads(tiers['kills'])
-            self.r_beds = json.loads(tiers['beds'])
-            self.r_games = json.loads(tiers['games'])
+            self.t_star = json.loads(tiers['star'])
+            self.t_fkdr = json.loads(tiers['fkdr'])
+            self.t_finals = json.loads(tiers['finals'])
+            self.t_kills = json.loads(tiers['kills'])
+            self.t_beds = json.loads(tiers['beds'])
+            self.t_games = json.loads(tiers['games'])
+            self.tiers_set = [
+                self.t_star,
+                self.t_fkdr,
+                self.t_finals,
+                self.t_kills,
+                self.t_beds,
+                self.t_games
+            ]
 
         def get_closest(self, ign: str) -> List[int]:
+
+            c_star = 0
+            c_fkdr = 0
+            c_finals = 0
+            c_kills = 0
+            c_beds = 0
+            c_games = 0
+
             stats = Calcs.get_stats(self, ign)
 
             # c = closest
-            c_star = min(self.r_star, key=(lambda list_value : abs(list_value - stats[0])))
-            c_fkdr = min(self.r_fkdr, key=(lambda list_value : abs(list_value - stats[8])))
-            c_finals = min(self.r_finals, key=(lambda list_value : abs(list_value - stats[7])))
-            c_kills = min(self.r_kills, key=(lambda list_value : abs(list_value - stats[2])))
-            c_beds = min(self.r_beds, key=(lambda list_value : abs(list_value - stats[6])))
-            c_games = min(self.r_games, key=(lambda list_value : abs(list_value - stats[5])))
 
             stats_set = [
-                self.r_star.index(c_star),
-                self.r_fkdr.index(c_fkdr),
-                self.r_finals.index(c_finals),
-                self.r_kills.index(c_kills),
-                self.r_beds.index(c_beds),
-                self.r_games.index(c_games)
+                c_star,
+                c_fkdr,
+                c_finals,
+                c_kills,
+                c_beds,
+                c_games
                 ]
+
+            for i in range(len(stats_set)):
+                stats_set[i] = min(self.tiers_set[i], key=(lambda list_value : abs(list_value - stats[i])))
+                stats_set[i] = self.tiers_set[i].index(stats_set[i])
+
             return [stats_set, round(mean(stats_set),0)]
 
         def get_difference(self, ign: str) -> list:
             stats = Calcs.get_stats(self, ign)
+
             dr_star = 0
             dr_fkdr = 0
             dr_finals = 0
@@ -222,33 +238,22 @@ class Calcs(commands.Cog):
             # d = difference
             
             # relative tier - stat to each closest rank
-            closest_relatives = Calcs.Get_Tier.get_closest(self, ign)[0]
-            try:
-                dr_star = round(stats[0]/self.r_star[closest_relatives[0]],2)
-                dr_fkdr = round(stats[8]/self.r_fkdr[closest_relatives[1]],2)
-                dr_finals = round(stats[7]/self.r_finals[closest_relatives[2]],2)
-                dr_kills = round(stats[2]/self.r_kills[closest_relatives[3]],2)
-                dr_beds = round(stats[6]/self.r_beds[closest_relatives[4]],2)
-                dr_games = round(stats[5]/self.r_games[closest_relatives[5]],2)
-            except:
-                pass
 
-            closest_rank = int(Calcs.Get_Tier.get_closest(self, ign)[1])
+            closest = Calcs.Get_Tier.get_closest(self, ign)
 
-            d_star = round(stats[0]/self.r_star[closest_rank],2)
-            d_fkdr = round(stats[8]/self.r_fkdr[closest_rank],2)
-            d_finals = round(stats[7]/self.r_finals[closest_rank],2)
-            d_kills = round(stats[2]/self.r_kills[closest_rank],2)
-            d_beds = round(stats[6]/self.r_beds[closest_rank],2)
-            d_games = round(stats[5]/self.r_games[closest_rank],2)
+            closest_rank = int(closest[1])
+            closest_relatives = closest[0]
 
-            stats_set = [
+            relatives_set = [
                 dr_star,
                 dr_fkdr,
                 dr_finals,
                 dr_kills,
                 dr_beds, 
-                dr_games,
+                dr_games
+            ]
+
+            absolutes_set = [
                 d_star,
                 d_fkdr,
                 d_finals,
@@ -257,7 +262,55 @@ class Calcs(commands.Cog):
                 d_games
             ]
 
-            return [stats_set, round(mean(stats_set[:6]),2), round(mean(stats_set[6:]),2)]
+            stats_set = []
+
+            for i in range(len(relatives_set)):
+                relatives_set[i] = round(stats[i]/self.tiers_set[i][closest_relatives[i]],2)
+
+            for i in range(len(absolutes_set)):
+                absolutes_set[i] = round(stats[i]/self.tiers_set[i][closest_rank],2)
+
+            for i in range(len(relatives_set)):
+                stats_set.append(relatives_set[i])
+
+            for i in range(len(absolutes_set)):
+                stats_set.append(absolutes_set[i])
+
+            return [stats_set, round(mean(relatives_set),2), round(mean(absolutes_set),2)]
+
+        def get_next_difference(self, ign: str):
+
+            d_star = 0
+            d_fkdr = 0
+            d_finals = 0
+            d_kills = 0
+            d_beds = 0
+            d_games = 0
+
+            stats = Calcs.get_stats(self, ign)
+
+            closest_relatives = Calcs.Get_Tier.get_closest(self, ign)[0]
+
+            stats_set = [
+                d_star,
+                d_fkdr,
+                d_finals,
+                d_kills,
+                d_beds, 
+                d_games
+            ]
+
+            for i in range(len(stats_set)):
+                stats_set[i] = round(self.tiers_set[i][closest_relatives[i]]-stats[i],2)
+                if stats_set[i] < 0:
+                    try:
+                        stats_set[i] = round(self.tiers_set[i][closest_relatives[i]+1]-stats[i],2)
+                    except:
+                        pass
+                        # There is not currently a tier above this stat value.
+
+            return stats_set
+
 
         def to_romans(self, tier: str) -> str:
             romans = ["I","II","III","IV","V","VI","VII"]

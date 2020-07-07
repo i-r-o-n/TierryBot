@@ -14,7 +14,7 @@ token = secrets['Discord Bot Token']
 class Key:
     global secrets
 
-    hypixel_key = secrets['Hypixel API Key']
+    hypixel_key = secrets['Hypixel API Keys']
     key_index_len = len(hypixel_key.keys())
 
     def get_key(self, index:int, hypixel_key=hypixel_key) -> str:
