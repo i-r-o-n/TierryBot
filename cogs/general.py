@@ -121,5 +121,10 @@ class General(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        await member.send(f'Hey {member.mention}!\n Please verify using your **Minecraft Username** by typing:\n```\n.v yourUserName\n```\nin the verify channel.\nThanks!')
+
 def setup(bot):
     bot.add_cog(General(bot))

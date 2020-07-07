@@ -65,7 +65,7 @@ class Tier(commands.Cog):
         embed.add_field(
             name="Finals until next FKDR | Projected Games to Achieve",
             # [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
-            value=f'`{int(finals_reqd)}` | `{int(round(finals_reqd/((stats[1]+next_fkdr)/2),0))}`',
+            value=f'`{int(finals_reqd)}` | `{int(round(finals_reqd/((stats[1]+next_fkdr)/2),1))}`',
             inline=True
             )
         embed.add_field(
