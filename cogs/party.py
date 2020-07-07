@@ -88,6 +88,10 @@ class Party(commands.Cog):
             value=f'`{Calcs.Rank.rank(self, ign)}`'
             )
         embed.add_field(
+            name="Guild",
+            value=f'`{API.get_guild(self, ign)}`'
+            )
+        embed.add_field(
             name="\uFEFF",
             value='\uFEFF',
             inline=False

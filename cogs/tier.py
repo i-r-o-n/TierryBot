@@ -14,8 +14,8 @@ class Tier(commands.Cog):
         # self.new_tn = NewTier()
         self.bot = bot
         
-    @commands.command(name='stats', aliases=['st'])
-    async def stats(self, ctx, ign):
+    @commands.command(name='bedwars', aliases=['bw'])
+    async def bedwars(self, ctx, ign):
         await ctx.trigger_typing()
         
         uuid = API.get_uuid(self, ign)[0]
@@ -108,8 +108,8 @@ class Tier(commands.Cog):
         await ctx.send(ctx.message.author.mention)
         return await ctx.send(embed=embed)
 
-    @stats.error
-    async def stats_error(self, ctx, error):
+    bedwars.error
+    async def bedwars_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Stats **`ERROR`** | This might be an outdated or invalid username.')
 

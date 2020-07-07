@@ -12,7 +12,7 @@ class API(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	def get_hypixel(self, uuid, hypixel_key=None, data='player'):
+	def get_hypixel(self, uuid, hypixel_key=None, data='player', id_tag='uuid'):
 
 		global i
 		i += 1
@@ -20,8 +20,9 @@ class API(commands.Cog):
 		hypixel_key = Key.get_key(self, i)
 		response =  None
 
-		response = requests.get(f'https://api.hypixel.net/{data}?key={hypixel_key}&uuid={uuid}')
+		response = requests.get(f'https://api.hypixel.net/{data}?key={hypixel_key}&{id_tag}={uuid}')
 		response = json.loads(response.text)
+		print(i)
 		return response
 
 	def get_key_info(self, key):
@@ -60,10 +61,24 @@ class API(commands.Cog):
 			ign = response['name']
 		except:
 			raise ValueError('Invalid username')
-		return (uuid, ign)
+		return [uuid, ign]
 
 	def get_guild(self, ign):
-		pass
+		uuid = API.get_uuid(self, ign)[0]
+
+		g_uuid = API.get_hypixel(self, uuid, data='findGuild', id_tag='byUuid')
+
+		guild_name = '?'
+
+		if g_uuid['success'] == True:
+			g_uuid = g_uuid['guild']
+
+		guild = API.get_hypixel(self, g_uuid, data='guild', id_tag='id')
+
+		if guild['success'] == True:
+			guild_name = guild['guild']['name']
+
+		return guild_name
 
 def setup(bot):
     bot.add_cog(API(bot))

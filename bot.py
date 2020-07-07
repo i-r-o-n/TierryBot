@@ -39,6 +39,8 @@ initial_extensions = ['cogs.api',
 
 bot = commands.Bot(command_prefix=get_prefix, description='Bedwars Tier Bot')
 
+# Notice: the way this bot is coded appeals to readability rather than kindness to the hypixel api. Commands are slow due to multiple requests on the api.
+
 if __name__ in '__main__':
   for extension in initial_extensions:
     try:

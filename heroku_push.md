@@ -1,0 +1,7 @@
+heroku login
+
+git commit -am "commit message"
+git add .
+git push heroku master
+
+heroku logs -a tierry-bot
