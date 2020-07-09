@@ -2974,3 +2974,80 @@
 2020-07-09 11:52:05,531:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 489, 'op': 0, 'd': {'user': {'id': '255088359599374347'}, 'status': 'offline', 'roles': ['661932292909826088', '661937722403061769', '661938904886280206', '698403490086518794'], 'premium_since': None, 'nick': '[230✫] godrays', 'guild_id': '661924783369355284', 'game': None, 'client_status': {}, 'activities': []}}
 2020-07-09 11:52:05,531:DEBUG:discord.client: Dispatching event socket_response
 2020-07-09 11:52:05,532:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:52:14,730:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:52:14,730:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 490, 'op': 0, 'd': {'user': {'username': 'Minty', 'public_flags': 128, 'id': '417492070555451403', 'discriminator': '1819', 'avatar': 'a_a1bc6dbc72ab5c6d6161394709d75c0b'}, 'status': 'dnd', 'roles': ['661932292909826088', '661937722403061769', '661938904886280206', '662429332186202123', '697211084578357260', '698403490086518794', '721462425211109467'], 'premium_since': None, 'nick': '[214✫] OoMinty', 'guild_id': '661924783369355284', 'game': {'type': 4, 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': 'sadminty', 'id': '711317318352765059', 'animated': False}, 'created_at': 1594320733618}, 'client_status': {'mobile': 'dnd'}, 'activities': [{'type': 4, 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': 'sadminty', 'id': '711317318352765059', 'animated': False}, 'created_at': 1594320733618}]}}
+2020-07-09 11:52:14,730:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:52:14,730:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:52:32,899:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:52:32,900:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 491, 'op': 0, 'd': {'user': {'id': '294468537899024384'}, 'status': 'offline', 'roles': [], 'premium_since': None, 'nick': None, 'guild_id': '661924783369355284', 'game': None, 'client_status': {}, 'activities': []}}
+2020-07-09 11:52:32,900:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:52:32,900:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:52:38,320:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:52:38,321:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 492, 'op': 0, 'd': {'user': {'username': 'nobody*', 'public_flags': 256, 'id': '294468537899024384', 'discriminator': '5564', 'avatar': 'd8a1fd90df432883dfb8d853b91cdbaf'}, 'status': 'online', 'roles': [], 'premium_since': None, 'nick': None, 'guild_id': '661924783369355284', 'game': None, 'client_status': {'web': 'online'}, 'activities': []}}
+2020-07-09 11:52:38,321:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:52:38,321:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:52:38,533:DEBUG:discord.gateway: Keeping websocket alive with sequence 492.
+2020-07-09 11:52:38,533:DEBUG:discord.client: Dispatching event socket_raw_send
+2020-07-09 11:52:38,631:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:52:38,631:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2020-07-09 11:52:38,631:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:53:05,789:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:53:05,789:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 493, 'op': 0, 'd': {'user': {'id': '392535923293814784'}, 'status': 'dnd', 'roles': ['661932259078701107', '661937722029768714', '661937722403061769', '661938696664252416', '698403490086518794', '707623344622534656'], 'premium_since': None, 'nick': '[131✫] ilyaloe', 'guild_id': '661924783369355284', 'game': {'type': 4, 'state': 'probably asleep // ily aloe (:', 'name': 'Custom Status', 'id': 'custom', 'created_at': 1594280058689}, 'client_status': {'desktop': 'dnd'}, 'activities': [{'type': 4, 'state': 'probably asleep // ily aloe (:', 'name': 'Custom Status', 'id': 'custom', 'created_at': 1594280058689}, {'type': 2, 'timestamps': {'start': 1594320785602, 'end': 1594321009802}, 'sync_id': '371Tb0eNfpjpSqggjcLv8c', 'state': 'All Time Low', 'session_id': '1d152ea567a0339364ab63251138c943', 'party': {'id': 'spotify:392535923293814784'}, 'name': 'Spotify', 'id': 'spotify:1', 'flags': 48, 'details': 'Therapy', 'created_at': 1594320784780, 'assets': {'large_text': 'Nothing Personal (Deluxe Version)', 'large_image': 'spotify:ab67616d0000b27324889965c2b453cbd439a7f6'}}]}}
+2020-07-09 11:53:05,790:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:53:05,790:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:53:19,785:DEBUG:discord.gateway: Keeping websocket alive with sequence 493.
+2020-07-09 11:53:19,785:DEBUG:discord.client: Dispatching event socket_raw_send
+2020-07-09 11:53:19,886:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:53:19,886:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2020-07-09 11:53:19,886:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:53:34,724:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:53:34,724:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 494, 'op': 0, 'd': {'user': {'id': '269689475192455168'}, 'status': 'online', 'roles': ['699089356501286923'], 'guild_id': '699088449893826622', 'game': {'type': 4, 'state': 'Clicking 𝗕𝗹𝗼𝗰𝗸𝘀', 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': 'Minecraft', 'id': '500179565155450880', 'animated': False}, 'created_at': 1594320813641}, 'client_status': {'desktop': 'online'}, 'activities': [{'type': 4, 'state': 'Clicking 𝗕𝗹𝗼𝗰𝗸𝘀', 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': 'Minecraft', 'id': '500179565155450880', 'animated': False}, 'created_at': 1594320813641}]}}
+2020-07-09 11:53:34,724:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:53:34,724:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:53:34,810:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:53:34,811:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 495, 'op': 0, 'd': {'user': {'id': '269689475192455168'}, 'status': 'online', 'roles': ['661928935692697621', '661932259078701107', '661937722403061769', '661937723501969410', '661938696664252416', '662429332186202123', '662806534199443465', '698403490086518794', '707623344622534656', '721462425211109467'], 'premium_since': '2020-04-10T22:54:32.552000+00:00', 'nick': '[00✫] Irron', 'guild_id': '661924783369355284', 'game': {'type': 4, 'state': 'Clicking 𝗕𝗹𝗼𝗰𝗸𝘀', 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': 'Minecraft', 'id': '500179565155450880', 'animated': False}, 'created_at': 1594320813641}, 'client_status': {'desktop': 'online'}, 'activities': [{'type': 4, 'state': 'Clicking 𝗕𝗹𝗼𝗰𝗸𝘀', 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': 'Minecraft', 'id': '500179565155450880', 'animated': False}, 'created_at': 1594320813641}]}}
+2020-07-09 11:53:34,811:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:53:34,811:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:54:01,036:DEBUG:discord.gateway: Keeping websocket alive with sequence 495.
+2020-07-09 11:54:01,036:DEBUG:discord.client: Dispatching event socket_raw_send
+2020-07-09 11:54:01,125:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:54:01,125:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2020-07-09 11:54:01,125:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:54:29,855:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:54:29,855:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 496, 'op': 0, 'd': {'user': {'id': '299368951740104706'}, 'status': 'offline', 'roles': [], 'premium_since': None, 'nick': None, 'guild_id': '661924783369355284', 'game': None, 'client_status': {}, 'activities': []}}
+2020-07-09 11:54:29,856:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:54:29,856:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:54:33,342:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:54:33,342:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 497, 'op': 0, 'd': {'user': {'username': 'Darius', 'id': '299368951740104706', 'discriminator': '0002', 'avatar': 'fd94bb35f061a9df9defa6b22b411064'}, 'status': 'dnd', 'roles': [], 'premium_since': None, 'nick': None, 'guild_id': '661924783369355284', 'game': None, 'client_status': {'desktop': 'dnd'}, 'activities': []}}
+2020-07-09 11:54:33,342:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:54:33,342:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:54:42,287:DEBUG:discord.gateway: Keeping websocket alive with sequence 497.
+2020-07-09 11:54:42,287:DEBUG:discord.client: Dispatching event socket_raw_send
+2020-07-09 11:54:42,375:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:54:42,375:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2020-07-09 11:54:42,375:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:54:47,394:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:54:47,394:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 498, 'op': 0, 'd': {'user': {'id': '275813801792634880'}, 'status': 'online', 'roles': ['662428884331134976', '662445696921763841', '698403490086518794'], 'premium_since': None, 'nick': None, 'guild_id': '661924783369355284', 'game': {'type': 3, 'name': '489361 channels', 'id': 'ec0b28a579ecb4bd', 'created_at': 1594320884545}, 'client_status': {'web': 'online'}, 'activities': [{'type': 3, 'name': '489361 channels', 'id': 'ec0b28a579ecb4bd', 'created_at': 1594320884545}]}}
+2020-07-09 11:54:47,394:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:54:47,394:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:55:08,787:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:55:08,788:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 499, 'op': 0, 'd': {'user': {'id': '433425834053730325'}, 'status': 'dnd', 'roles': ['661932292909826088', '661937723099185165', '661939052496420894', '698403490086518794'], 'premium_since': None, 'nick': '[319✫] Detrone', 'guild_id': '661924783369355284', 'game': {'type': 4, 'state': 'HONK', 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': '🦆'}, 'created_at': 1594313907696}, 'client_status': {'desktop': 'dnd'}, 'activities': [{'type': 4, 'state': 'HONK', 'name': 'Custom Status', 'id': 'custom', 'emoji': {'name': '🦆'}, 'created_at': 1594313907696}]}}
+2020-07-09 11:55:08,788:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:55:08,789:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:55:12,375:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:55:12,375:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 500, 'op': 0, 'd': {'user': {'id': '275813801792634880'}, 'status': 'online', 'roles': ['662428884331134976', '662445696921763841', '698403490086518794'], 'premium_since': None, 'nick': None, 'guild_id': '661924783369355284', 'game': {'type': 3, 'name': 'over 272967 guilds', 'id': 'ec0b28a579ecb4bd', 'created_at': 1594320909437}, 'client_status': {'web': 'online'}, 'activities': [{'type': 3, 'name': 'over 272967 guilds', 'id': 'ec0b28a579ecb4bd', 'created_at': 1594320909437}]}}
+2020-07-09 11:55:12,375:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:55:12,375:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:55:21,644:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:55:21,644:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 501, 'op': 0, 'd': {'user': {'id': '417492070555451403'}, 'status': 'offline', 'roles': ['661932292909826088', '661937722403061769', '661938904886280206', '662429332186202123', '697211084578357260', '698403490086518794', '721462425211109467'], 'premium_since': None, 'nick': '[214✫] OoMinty', 'guild_id': '661924783369355284', 'game': None, 'client_status': {}, 'activities': []}}
+2020-07-09 11:55:21,645:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:55:21,645:DEBUG:discord.client: Dispatching event member_update
+2020-07-09 11:55:23,537:DEBUG:discord.gateway: Keeping websocket alive with sequence 501.
+2020-07-09 11:55:23,540:DEBUG:discord.client: Dispatching event socket_raw_send
+2020-07-09 11:55:23,634:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:55:23,634:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2020-07-09 11:55:23,634:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:55:27,943:DEBUG:discord.client: Dispatching event socket_raw_receive
+2020-07-09 11:55:27,944:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': 'PRESENCE_UPDATE', 's': 502, 'op': 0, 'd': {'user': {'id': '422453107109396490'}, 'status': 'idle', 'roles': ['661932259078701107', '661937722403061769', '661938696664252416', '662429332186202123', '697211084578357260', '698403490086518794'], 'premium_since': None, 'nick': '[190✫] Phantastically', 'guild_id': '661924783369355284', 'game': None, 'client_status': {'web': 'idle'}, 'activities': []}}
+2020-07-09 11:55:27,944:DEBUG:discord.client: Dispatching event socket_response
+2020-07-09 11:55:27,944:DEBUG:discord.client: Dispatching event member_update

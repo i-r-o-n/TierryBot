@@ -542,8 +542,6 @@ class Tier(commands.Cog):
 
         in_range = True
 
-        print(tiers_values)
-
         try:
             level = int(level)
         except:
