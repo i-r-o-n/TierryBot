@@ -15,11 +15,12 @@ class Tier(commands.Cog):
         self.bot = bot
         
     @commands.command(name='bedwars', aliases=['bw'])
-    async def bedwars(self, ctx, ign):
+    async def bedwars(self, ctx, ign: str, mode_input: str='0'):
         await ctx.trigger_typing()
         
         uuid = API.get_uuid(self, ign)[0]
 
+        #check username
         hypixel_data = API.get_hypixel(self, uuid)
         if not bool(hypixel_data["success"]):
             await ctx.send(ctx.message.author.mention)
@@ -29,7 +30,7 @@ class Tier(commands.Cog):
         image_full = f"https://mc-heads.net/body/{uuid}/128"
 
         embed = discord.Embed(
-                title = "Stats",
+                title = f"{mode_input} Stats",
                 description = "\uFEFF",
                 colour = discord.Color.blue()
         )
@@ -38,7 +39,7 @@ class Tier(commands.Cog):
             icon_url = image
         )
 
-        stats = Calcs.get_stats(self, ign)
+        stats = Calcs.get_bw(self, ign)
 
         fkdr = stats[1]
         finals = stats[2]
@@ -48,67 +49,155 @@ class Tier(commands.Cog):
             fkdr -= 1
             next_fkdr += 1
 
+        mode = 0
+        mode_input = mode_input.lower()
+
+        if mode_input == '0':
+            mode = 0
+        elif 'solo' in mode_input or '1' in mode_input:
+            mode = 1
+        elif 'duo' in mode_input or 'double' in mode_input or '2' in mode_input:
+            mode = 2
+        elif 'trio' in mode_input or 'triples' in mode_input or '3' in mode_input:
+            mode = 3
+        elif 'four' in mode_input or '4' in mode_input:
+            mode = 4
+        else:
+            pass
+
+
         finals_reqd = round(next_fkdr*(stats[2]/stats[1]) - finals, 0)
         
+        if mode == 0:
+            embed.set_thumbnail(url = image_full)
+            embed.add_field(
+                name="Stars",
+                value=f'`{stats[0]}`',
+                inline=True
+                )
+            embed.add_field(
+                name="FKDR | Finals / Final Deaths",
+                value=f'`{stats[8]}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Finals until next FKDR | Projected Games to Achieve",
+                # [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
+                value=f'`{int(finals_reqd)}` | `{int(round(finals_reqd/((stats[1]+next_fkdr)/2),1))}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Kills",
+                value=f'`{stats[3]}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Beds Broken",
+                value=f'`{stats[4]}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Games Played",
+                value=f'`{stats[5]}`',
+                inline=True
+                )
 
-        embed.set_thumbnail(url = image_full)
-        embed.add_field(
-            name="Stars",
-            value=f'`{stats[0]}`',
-            inline=True
-            )
-        embed.add_field(
-            name="FKDR | Finals / Final Deaths",
-            value=f'`{stats[8]}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Finals until next FKDR | Projected Games to Achieve",
-            # [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
-            value=f'`{int(finals_reqd)}` | `{int(round(finals_reqd/((stats[1]+next_fkdr)/2),1))}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Kills",
-            value=f'`{stats[3]}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Beds Broken",
-            value=f'`{stats[4]}`',
-            inline=True
-            )
-        embed.add_field(
-            name="Games Played",
-            value=f'`{stats[5]}`',
-            inline=True
-            )
+            embed.add_field(
+                name="Winrate",
+                value=f'`{stats[6]}`',
+                inline=False
+                )
+            embed.add_field(
+                name="Winstreak",
+                value=f'`{stats[7]}`',
+                inline=False
+                )
+        
+            embed.add_field(
+                name="\uFEFF",
+                value='\uFEFF',
+                inline=False
+                )
+            embed.add_field(
+                name="Rank",
+                value=f'`{Calcs.Rank.rank(self, ign)}`'
+                )
+        elif mode in range(1,5):
 
-        embed.add_field(
-            name="Winrate",
-            value=f'`{stats[6]}`',
-            inline=False
-            )
-        embed.add_field(
-            name="Winstreak",
-            value=f'`{stats[7]}`',
-            inline=False
-            )
-    
-        embed.add_field(
-            name="\uFEFF",
-            value='\uFEFF',
-            inline=False
-            )
-        embed.add_field(
-            name="Rank",
-            value=f'`{Calcs.Rank.rank(self, ign)}`'
-            )
+            bedwars_stats = hypixel_data['player']['stats']['Bedwars']
+            # ease of access list for api key names
+            index_names = ['','eight_one_', 'eight_two_', 'four_three_', 'four_four_']
+            chosen_index = '?'
+
+            for i in range(1,5):
+                if mode == i:
+                    chosen_index = index_names[i]
+
+            # set fallbacks for cross-mode stats
+            m_fkdr = ['final_kills_bedwars', 'final_deaths_bedwars']
+            m_kills = 'kills_bedwars'
+            m_beds = 'beds_broken_bedwars'
+            m_games = 'games_played_bedwars'
+            m_winrate = ['wins_bedwars', 'losses_bedwars']
+            m_resources = 'resources_collected_bedwars'
+
+            try:
+                m_fkills = bedwars_stats[str(chosen_index + m_fkdr[0])]
+                m_fdeaths = bedwars_stats[str(chosen_index + m_fkdr[1])]
+                m_fkdr = f'{round(m_fkills/m_fdeaths,2)} ({m_fkills}/{m_fdeaths})'
+                m_kills = bedwars_stats[str(chosen_index + m_kills)]
+                m_beds = bedwars_stats[str(chosen_index + m_beds)]
+                m_games = bedwars_stats[str(chosen_index + m_games)]
+                m_winrate = f'{round(bedwars_stats[str(chosen_index + m_winrate[0])]/m_games*100,2)}%'
+                m_resources = f'{bedwars_stats[chosen_index + "iron_" + m_resources]} | {bedwars_stats[chosen_index + "gold_" + m_resources]}'
+            except:
+                pass
+            
+
+
+            embed.set_thumbnail(url = image_full)
+            embed.add_field(
+                name="Stars",
+                value=f'`{stats[0]}`',
+                inline=False
+                )
+            embed.add_field(
+                name="FKDR | Finals / Final Deaths",
+                value=f'`{m_fkdr}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Kills",
+                value=f'`{m_kills}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Beds Broken",
+                value=f'`{m_beds}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Games Played",
+                value=f'`{m_games}`',
+                inline=True
+                )
+            embed.add_field(
+                name="Winrate",
+                value=f'`{m_winrate}`',
+                inline=False
+                )
+            embed.add_field(
+                name="Iron | Gold",
+                value=f'`{m_resources}`',
+                inline=False
+                )
+        else:
+            await ctx.send(f'Unable to interpret `{mode_input}`')
 
         await ctx.send(ctx.message.author.mention)
         return await ctx.send(embed=embed)
 
-    bedwars.error
+    @bedwars.error
     async def bedwars_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Stats **`ERROR`** | This might be an outdated or invalid username.')
@@ -284,7 +373,7 @@ class Tier(commands.Cog):
                 await ctx.send(f"Unable to interpret: \"{stat}\".")
                 return_values = False
 
-            stat_values = Calcs.get_stats(self, Calcs.get_nick(self, ign))
+            stat_values = Calcs.get_bw(self, Calcs.get_nick(self, ign))
             closest_tier  = Calcs.Get_Tier.get_closest(self, Calcs.get_nick(self, ign))
 
             embed = discord.Embed(
@@ -408,7 +497,7 @@ class Tier(commands.Cog):
                 stars = 0
 
                 try:
-                    stars = Calcs.get_stats(self, nick)[0]
+                    stars = Calcs.get_bw(self, nick)[0]
                 except:
                     stars = '?'
 
@@ -434,23 +523,47 @@ class Tier(commands.Cog):
 
     
     @commands.command(name='view_tier', aliases=['vt'])
-    async def view_tier(self, ctx):
+    async def view_tier(self, ctx, level=0):
         await ctx.trigger_typing()
         global tiers
         embed = discord.Embed(
             color=discord.Color.greyple(),
-            description=f"Tier Levels",
+            title="Tier Levels",
+            description="Include an argument to view individual tiers",
         )
 
-        print(tiers)
+        tiers_keys = list(tiers.keys())
+        tiers_values = []
+        for i in range(len(tiers_keys)):
+            tiers_values.append(tiers[str(tiers_keys[i])])
+            for char in ['[',']']:
+                tiers_values[i] = tiers_values[i].replace(char,'')
+            tiers_values[i] = list(tiers_values[i].split(","))
 
-        embed.add_field(name="x", value=f"x", inline=False)
-        embed.add_field(name="x", value=f"x", inline=False)
-        embed.add_field(name="x", value=f"x")
+        in_range = True
 
+        print(tiers_values)
+
+        try:
+            level = int(level)
+        except:
+            await ctx.send(f'Unable to interpret tier: {level}')
+
+        if level == 0:
+            for i in range(len(tiers_keys)):
+                embed.add_field(name=tiers_keys[i], value=str(tiers[str(tiers_keys[i])]).replace(",",", "), inline=False)
+        elif level in range(1,8):
+            for i in range(len(tiers_keys)):
+                embed.add_field(name=tiers_keys[i], value=str(tiers_values[i][level]).replace(",",", ").replace("'",""), inline=False)
+        else:
+            await ctx.send(f'Tier {level} out of range.')
+            in_range = False
+
+        
         embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
 
-        await ctx.send(embed=embed)
+        if in_range == True:
+            await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Tier(bot))

@@ -12,7 +12,7 @@ class Calcs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def get_stats(self, ign: str) -> list:
+    def get_bw(self, ign: str) -> list:
         uuid = API.get_uuid(self, ign)[0]
 
         hypixel_data = API.get_hypixel(self, uuid)
@@ -200,7 +200,7 @@ class Calcs(commands.Cog):
             c_beds = 0
             c_games = 0
 
-            stats = Calcs.get_stats(self, ign)
+            stats = Calcs.get_bw(self, ign)
 
             # c = closest
 
@@ -220,7 +220,7 @@ class Calcs(commands.Cog):
             return [stats_set, round(mean(stats_set),0)]
 
         def get_difference(self, ign: str) -> list:
-            stats = Calcs.get_stats(self, ign)
+            stats = Calcs.get_bw(self, ign)
 
             dr_star = 0
             dr_fkdr = 0
@@ -287,7 +287,7 @@ class Calcs(commands.Cog):
             d_beds = 0
             d_games = 0
 
-            stats = Calcs.get_stats(self, ign)
+            stats = Calcs.get_bw(self, ign)
 
             closest_relatives = Calcs.Get_Tier.get_closest(self, ign)[0]
 
