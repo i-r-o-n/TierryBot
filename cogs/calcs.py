@@ -111,6 +111,19 @@ class Calcs(commands.Cog):
             return nick[nick.index("]")+2:]
         else:
             return nick
+    
+    def is_online(self, uuid: str) -> bool:
+        hypixel_data = API.get_hypixel(self, uuid)
+
+        online = False
+
+        try:
+            if int(hypixel_data['player']["lastLogin"]) > int(hypixel_data['player']["lastLogout"]):
+                online = True
+        except:
+            pass
+
+        return online
 
     class Rank:
 
