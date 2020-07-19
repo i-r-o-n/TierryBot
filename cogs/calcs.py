@@ -228,7 +228,10 @@ class Calcs(commands.Cog):
 
             for i in range(len(stats_set)):
                 stats_set[i] = min(self.tiers_set[i], key=(lambda list_value : abs(list_value - stats[i])))
-                stats_set[i] = self.tiers_set[i].index(stats_set[i])
+                if stats[i] < stats_set[i]:
+                    stats_set[i] = stats_set[i] = self.tiers_set[i].index(stats_set[i])-1
+                elif stats[i] >= stats_set[i]:
+                    stats_set[i] = self.tiers_set[i].index(stats_set[i])
 
             return [stats_set, round(mean(stats_set),0)]
 
@@ -325,8 +328,8 @@ class Calcs(commands.Cog):
             return stats_set
 
 
-        def to_romans(self, tier: str) -> str:
-            romans = ["I","II","III","IV","V","VI","VII"]
+        def to_romans(self, tier: int) -> str:
+            romans = ["I","II","III","IV","V","VI","VII","VIII","IX","X"]
             return str(f"[Tier {romans[tier-1]}]")
 
 

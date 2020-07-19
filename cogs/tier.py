@@ -550,7 +550,7 @@ class Tier(commands.Cog):
         if level == 0:
             for i in range(len(tiers_keys)):
                 embed.add_field(name=tiers_keys[i], value=str(tiers[str(tiers_keys[i])]).replace(",",", "), inline=False)
-        elif level in range(1,8):
+        elif level in range(1,len(tiers_values[0])): #arbitrary which stat is chosen, hopefully they are all the same length
             for i in range(len(tiers_keys)):
                 embed.add_field(name=tiers_keys[i], value=str(tiers_values[i][level]).replace(",",", ").replace("'",""), inline=False)
         else:
