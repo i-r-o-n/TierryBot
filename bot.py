@@ -1,10 +1,12 @@
 import discord
+
 from discord.ext import commands
 
 import traceback
 import logging
 
 from cogs.admin import token
+
 
 # NOTE: search for the text "EDIT!" to find proprietary code that can be changed
 
@@ -56,6 +58,5 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Game(name=game_acitivity, type=1))
     print(f'Successfully logged in and booted.')
-
 
 bot.run(token, bot=True, reconnect=True)
