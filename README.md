@@ -1,5 +1,5 @@
 # TierryBot
-## v 0.1.2.0
+## v 1.0.2.0
 A Proprietary Minecraft Hypixel tier creating bot for Discord
 Tier Calculation/Research - https://docs.google.com/spreadsheets/d/1XqQEhTdC8Q2O2m-YbPiqdSH9wceWeudN5byUDB29bKg/edit?usp=sharing
 
