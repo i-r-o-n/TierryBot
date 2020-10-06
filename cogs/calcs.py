@@ -1,9 +1,11 @@
+from decimal import HAVE_THREADS
 from typing import List
 import discord
 from discord.ext import commands
 import requests
 from statistics import mean
 import json
+import math
 
 from cogs.api import API
 from cogs.admin import tiers
@@ -12,69 +14,149 @@ class Calcs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def get_sw(self, ign: str) -> list:
+        uuid = API.get_uuid(self, ign)[0]
+
+        hypixel_data = API.get_hypixel(self, uuid)
+
+        skywars_stats = hypixel_data['player']['stats']['SkyWars']
+
+        stars = ''
+        kdr_raw = ''
+        kills = ''
+        games = ''
+        wins = ''
+        winrate = ''
+        kdr = ''
+        heads = ''
+        shards = ''
+        opals = ''
+
+        data = [stars, kdr_raw, kills, games, wins, winrate, heads, shards, opals]
+
+        try:
+            stars = round(Calcs.get_skywars_star(self, skywars_stats["skywars_experience"]), 2)
+        except:
+            stars = '?'
+
+        try:
+            kills = int(skywars_stats['kills'])
+            deaths = int(skywars_stats['deaths'])
+            kdr += str(round(kills / deaths, 2))
+            kdr += f' ({kills}/{deaths})'
+            kdr_raw = round(kills / deaths, 2)
+        except:
+            kdr = '?'
+            kills = '?'
+            kdr_raw = '?'
+        
+        try:
+            wins = int(skywars_stats['wins'])
+            losses = int(skywars_stats['losses'])
+            winrate = wins / (wins + losses) * 100
+            winrate = f'{winrate:.2f}%'
+        except:
+            winrate = '?'
+
+        try:
+            games = skywars_stats['games_played_skywars']
+        except:
+            games = '?'
+
+        try:
+            wins = skywars_stats['wins']
+        except:
+            wins = '?'
+        
+        try:
+            kills = skywars_stats['kills']
+        except:
+            kills = '?'
+    
+        try:
+            heads = skywars_stats['heads']
+        except:
+            heads = '?'
+        
+        try:
+            shards = skywars_stats['shard']
+        except:
+            shards = '?'
+
+        opals = ''
+        try:
+            opals = skywars_stats['opals']
+        except:
+            opals = '?'
+
+        return data
+
     def get_bw(self, ign: str) -> list:
         uuid = API.get_uuid(self, ign)[0]
 
         hypixel_data = API.get_hypixel(self, uuid)
 
-        bedwars_stats = hypixel_data['player']['stats']['Bedwars']
-
         stars = ''
-        try:
-            stars = hypixel_data['player']['achievements']['bedwars_level']
-            #stars = f'[{stars}✫]'
-        except:
-            stars = '?'
-
+        fkdr_raw = ''
         fkdr = ''
         final_kills = ''
-        fkdr_raw = ''
-        try:
-            final_kills = int(bedwars_stats['final_kills_bedwars'])
-            final_deaths = int(bedwars_stats['final_deaths_bedwars'])
-            fkdr += str(round(final_kills / final_deaths, 2))
-            fkdr += f' ({final_kills}/{final_deaths})'
-            fkdr_raw = round(final_kills / final_deaths, 2)
-        except:
-            fkdr = '?'
-            final_kills = '?'
-            fkdr_raw = '?'
-        
-        winrate = ''
-        try:
-            wins = int(bedwars_stats['wins_bedwars'])
-            losses = int(bedwars_stats['losses_bedwars'])
-            winrate = wins / (wins + losses) * 100
-            winrate = f'{winrate:.2f}%'
-        except:
-            winrate += '?'
-
-        # Winstreak
-        winstreak = ''
-        try:
-            winstreak = bedwars_stats['winstreak']
-        except:
-            winstreak = '?'
-
-        games = ''
-        try:
-            games = bedwars_stats['games_played_bedwars_1']
-        except:
-            games = '?'
-
-        beds = ''
-        try:
-            beds = bedwars_stats['beds_broken_bedwars']
-        except:
-            beds = '?'
-        
+        final_deaths = ''
         kills = ''
-        try:
-            kills = bedwars_stats['kills_bedwars']
-        except:
-            kills = '?'
+        deaths = ''
+        bblr = ''
+        beds_broken = ''
+        beds_lost = ''
+        winrate = ''
+        wins = ''
+        losses = ''
+        games_played = ''
+        winstreak = ''
 
-        return [stars, fkdr_raw, final_kills, kills, beds, games, winrate, winstreak, fkdr]
+        data = [stars, fkdr_raw, fkdr, final_kills, final_deaths, kills, deaths, bblr, beds_broken, beds_lost, winrate, wins, losses, games_played, winstreak]
+
+        bedwars_stats = hypixel_data['player']['stats']['Bedwars']
+
+        stars = hypixel_data['player']['achievements']['bedwars_level']
+            #stars = f'[{stars}✫]'
+
+        fkdr = str(round(final_kills / final_deaths, 2))
+        fkdr += f' ({final_kills}/{final_deaths})'
+        fkdr_raw = round(final_kills / final_deaths, 2)
+
+        final_kills = int(bedwars_stats['final_kills_bedwars'])
+        final_deaths = int(bedwars_stats['final_deaths_bedwars'])
+
+        kills = bedwars_stats['kills_bedwars']
+        deaths = bedwars_stats['deaths_bedwars']
+
+        beds_broken = int(bedwars_stats['beds_broken_bedwars'])
+        beds_lost = int(bedwars_stats['beds_lost_bedwars'])
+        bblr = wins / (wins + losses) * 100
+        bblr = f'{bblr:.2f}%'
+        
+        wins = int(bedwars_stats['wins_bedwars'])
+        losses = int(bedwars_stats['losses_bedwars'])
+
+        winrate = wins / (wins + losses) * 100
+        winrate = f'{winrate:.2f}%'
+
+        winstreak = bedwars_stats['winstreak']
+
+        games_played = bedwars_stats['games_played_bedwars_1']
+
+        return data
+
+    def get_hypixel_network_level(self, exp: int) -> int:
+        return (math.sqrt((2 * exp) + 30625) / 50) - 2.5
+
+    def get_skywars_star(self, exp: int) -> int:
+        xps = [0, 20, 70, 150, 250, 500, 1000, 2000, 3500, 6000, 10000, 15000]
+        if exp >= 15000:
+            return (exp - 15000) / 10000. + 12
+        else:
+            for i in range(len(xps)):
+                if exp < xps[i]:
+                    return 0 + i + float(exp - xps[i-1]) / (xps[i] - xps[i-1])
 
     def get_socials(self, ign: str):
         
@@ -138,7 +220,6 @@ class Calcs(commands.Cog):
             else:
                 return 0
             
-
         def get_sub(self, ign: str) -> int:
 
             uuid = API.get_uuid(self, ign)[0]
@@ -152,7 +233,7 @@ class Calcs(commands.Cog):
                     return 0
             else:
                 return 0
-        
+    
         def get_staff(self, ign: str):
 
             uuid = API.get_uuid(self, ign)[0]
@@ -164,7 +245,6 @@ class Calcs(commands.Cog):
             else:
                 return 0
             
-        
         def rank(self, ign: str) -> str:
             rank = ''
             
@@ -327,10 +407,9 @@ class Calcs(commands.Cog):
 
             return stats_set
 
-
         def to_romans(self, tier: int) -> str:
-            romans = ["I","II","III","IV","V","VI","VII","VIII","IX","X"]
-            return str(f"[Tier {romans[tier-1]}]")
+            romans = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X"]
+            return str(f"[Tier {romans[tier]}]")
 
 
 

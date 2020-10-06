@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 import json
+import math
 
 from cogs.calcs import Calcs
 from cogs.api import API
@@ -44,10 +45,7 @@ class Tier(commands.Cog):
         fkdr = stats[1]
         finals = stats[2]
 
-        next_fkdr = 1
-        while fkdr >= 1:
-            fkdr -= 1
-            next_fkdr += 1
+        next_fkdr = math.ceil(fkdr)
 
         mode = 0
         mode_input = mode_input.lower()
@@ -88,17 +86,17 @@ class Tier(commands.Cog):
                 )
             embed.add_field(
                 name="Kills",
-                value=f'`{stats[3]}`',
+                value='`{:,d}`'.format(stats[3]),
                 inline=True
                 )
             embed.add_field(
                 name="Beds Broken",
-                value=f'`{stats[4]}`',
+                value='`{:,d}`'.format(stats[4]),
                 inline=True
                 )
             embed.add_field(
                 name="Games Played",
-                value=f'`{stats[5]}`',
+                value='`{:,d}`'.format(stats[5]),
                 inline=True
                 )
 
@@ -149,7 +147,11 @@ class Tier(commands.Cog):
                 m_beds = bedwars_stats[str(chosen_index + m_beds)]
                 m_games = bedwars_stats[str(chosen_index + m_games)]
                 m_winrate = f'{round(bedwars_stats[str(chosen_index + m_winrate[0])]/m_games*100,2)}%'
-                m_resources = f'{bedwars_stats[chosen_index + "iron_" + m_resources]} | {bedwars_stats[chosen_index + "gold_" + m_resources]}'
+
+                iron = '{:,d}'.format(bedwars_stats[chosen_index + "iron_" + m_resources])
+                gold = '{:,d}'.format(bedwars_stats[chosen_index + "gold_" + m_resources])
+
+                m_resources = f'{iron} | {gold}'
             except:
                 pass
             
@@ -168,17 +170,17 @@ class Tier(commands.Cog):
                 )
             embed.add_field(
                 name="Kills",
-                value=f'`{m_kills}`',
+                value='`{:,d}`'.format(m_kills),
                 inline=True
                 )
             embed.add_field(
                 name="Beds Broken",
-                value=f'`{m_beds}`',
+                value='`{:,d}`'.format(m_beds),
                 inline=True
                 )
             embed.add_field(
                 name="Games Played",
-                value=f'`{m_games}`',
+                value='`{:,d}`'.format(m_games),
                 inline=True
                 )
             embed.add_field(
@@ -200,7 +202,64 @@ class Tier(commands.Cog):
     @bedwars.error
     async def bedwars_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
-            await ctx.send('Stats **`ERROR`** | This might be an outdated or invalid username.')
+            await ctx.send('Bedwars Stats **`ERROR`** | This might be an outdated or invalid username.')
+
+    @commands.command(name='skywars', aliases=['sw'])
+    async def skywars(self, ctx, ign: str):
+        await ctx.trigger_typing()
+        
+        uuid = API.get_uuid(self, ign)[0]
+
+        #check username
+        hypixel_data = API.get_hypixel(self, uuid)
+        if not bool(hypixel_data["success"]):
+            await ctx.send(ctx.message.author.mention)
+            return await ctx.send(embed=discord.Embed(description = f'The player "{ign}" doesn\'t exist or has not logged on to Hypixel before.'))
+
+        image = f"https://mc-heads.net/head/{uuid}/128"
+        image_full = f"https://mc-heads.net/body/{uuid}/128"
+
+        embed = discord.Embed(
+                title = f"Skywars Stats",
+                description = "\uFEFF",
+                colour = discord.Color.purple()
+        )
+        embed.set_author(
+            name = ign,
+            icon_url = image
+        )
+
+        stats = Calcs.get_sw(self, ign)
+
+        stats_set_names = ['Stars', 'KDR', 'Kills', 'Games Played', 'Wins', 'Winrate', 'Heads', 'Shards', 'Opals']
+        #[stars, kdr, kills, games, winrate, heads, shards, opals]
+
+        embed.set_thumbnail(url = image_full)
+        
+        for i in range(len(stats_set_names)):
+            if i == 6:
+                embed.add_field(
+                name="\uFEFF",
+                value="\uFEFF",
+                inline=False
+                )
+            value = stats[i]
+            try:
+                value = '{:,d}'.format(value)
+            except:
+                pass
+            embed.add_field(
+                name=stats_set_names[i],
+                value=f'`{value}`',
+                )
+
+        await ctx.send(ctx.message.author.mention)
+        return await ctx.send(embed=embed)
+
+    @skywars.error
+    async def skywars_error(self, ctx, error):
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Skywars Stats **`ERROR`** | This might be an outdated or invalid username.')
 
     @commands.command(name='closest_rank', aliases=['cr'])
     async def closest_rank(self, ctx, ign):
@@ -433,9 +492,8 @@ class Tier(commands.Cog):
         rank_roles = []
         role = roles['tier'][Calcs.Get_Tier.to_romans(self, int(closest_rank))]
 
-        if closest_rank != 0:
-            for i in range(6):
-                rank_roles.append(str(Calcs.Get_Tier.to_romans(self, i)))
+        for i in range(6):
+            rank_roles.append(str(Calcs.Get_Tier.to_romans(self, i)))
 
         embed = discord.Embed(
             color=discord.Color.green(),
@@ -520,11 +578,11 @@ class Tier(commands.Cog):
             except discord.errors.Forbidden:
                 # Cannot change nick of admins
                 pass
-
     
     @commands.command(name='view_tier', aliases=['vt'])
     async def view_tier(self, ctx, level=0):
         await ctx.trigger_typing()
+        
         global tiers
         embed = discord.Embed(
             color=discord.Color.greyple(),

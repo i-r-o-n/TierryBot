@@ -1,3 +1,4 @@
+from typing import List
 from discord.ext import commands
 
 import random
@@ -5,6 +6,7 @@ import requests
 import json
 
 from cogs.admin import Key
+from datetime import datetime
 
 i = 0
 
@@ -50,6 +52,30 @@ class API(commands.Cog):
 		except:
 			ign = '?'
 		return ign
+	
+	def get_names(self, uuid) -> List:
+		response = requests.get(f"https://api.mojang.com/user/profiles/{uuid}/names")
+		response = json.loads(response.text)
+
+		names = []
+		names_len = len(response)
+
+		while names_len >= 0:
+
+			try:
+				time_unix = int(response[names_len-1]['changedToAt'])
+				
+				timestamp = datetime.fromtimestamp(round(time_unix/1000,0))
+				timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+			except:			#other line lenghts =
+				timestamp = 'first:             '
+
+			date_name = str(timestamp + ' - ' + response[names_len-1]['name'])
+
+			names.append(date_name)
+			names_len -= 1
+
+		return names
 
 	def get_uuid(self, ign):
 		response = requests.get(f'https://api.mojang.com/users/profiles/minecraft/{ign}')

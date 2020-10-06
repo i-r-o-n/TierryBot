@@ -5,11 +5,16 @@ import datetime
 import json
 
 # a json file is used for api keys and tokens.
-with open('secrets.json') as f:
-    secrets = json.load(f)
+with open('secrets.json') as f0:
+    secrets = json.load(f0)
 
 token = secrets['Discord Bot Token']
 
+with open('roles.json') as f1:
+    roles = json.load(f1)
+
+with open('tiers.json') as f2:
+    tiers = json.load(f2)
 
 class Key:
     global secrets
@@ -21,12 +26,32 @@ class Key:
         hypixel_key = hypixel_key[str(index)]
         return hypixel_key
 
+with open('denylist.json') as f0:
+    denylist = json.load(f0)
 
-with open('roles.json') as f:
-    roles = json.load(f)
+def update_denylist(update_data=None):
+    global denylist
+    with open('denylist.json') as u_f0:
+        denylist = json.load(u_f0)
 
-with open('tiers.json') as f:
-    tiers = json.load(f)
+        if update_data != None:
+            denylist['users'].append(str(update_data))
+
+    return denylist
+
+def scratch_denylist(remove_data):
+        s_f0 = json.load(open("denylist.json"))
+
+        print(s_f0['users'])
+            
+        for i in range(len(s_f0['users'])):
+            if s_f0['users'][i] == remove_data:
+                s_f0['users'].pop(i)
+                break
+
+        print(s_f0)
+
+        open('denylist.json','w').write(json.dumps(s_f0))
 
 from cogs.api import API
 
@@ -34,6 +59,10 @@ class Admin(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    def write_json(self, data, filename): 
+        with open(filename,'w') as f: 
+            json.dump(data, f, indent=1)
     
     # if ctx.author.server_permission.administrator:
 
@@ -98,6 +127,26 @@ class Admin(commands.Cog):
 
                 await ctx.send(embed=embed)
 
+
+    @commands.command(name='update_keys', hidden=True, aliases=['uk'])
+    @commands.is_owner()
+    async def update_keys(self, ctx, key_id, key):
+        global secrets
+
+
+        secrets["Hypixel API Keys"][str(key_id)] = key
+
+        json.dump(secrets, open('secrets.json', 'w'))
+
+        if int(key_id) <= Key.key_index_len:
+
+            await ctx.send('Updated Key')
+        
+        else:
+
+            await ctx.send("Update Keys **`ERROR`** | \nInvalid Index of Key")
+
+
     @commands.command(name='load', hidden=True)
     @commands.is_owner()
     async def load_cog(self, ctx, *, cog: str):
@@ -153,6 +202,52 @@ class Admin(commands.Cog):
         await ctx.send(f"[{datetime.datetime.now()}] Shutting Down command from {ctx.author}\n")
         await ctx.send("shutting down...")
         return await ctx.bot.logout()
+
+    @commands.command(name='add_denylist', hidden=True, aliases=['deny'])
+    @commands.has_permissions(administrator=True)
+    async def add_denylist(self, ctx, user):
+
+        update_denylist(user)
+
+        global denylist
+
+        self.write_json(denylist, 'denylist.json')
+
+        await ctx.send(f"Added user {user} to the deny list")
+
+
+    @commands.command(name='remove_denylist', hidden=True, aliases=['undeny'])
+    @commands.has_permissions(administrator=True)
+    async def remove_denylist(self, ctx, user):
+
+        update_denylist(user)
+
+        global denylist
+
+        try:
+            scratch_denylist(user)
+            await ctx.send(f'Removed {user}')
+        except:
+            await ctx.send(f"User {user} not found")
+
+    @commands.command(name='list_denylist', hidden=True, aliases=['listdeny', 'denylist', 'ld'])
+    @commands.has_permissions(administrator=True)
+    async def list_denylist(self, ctx):
+
+        update_denylist()
+        global denylist
+
+        msg = "```"
+
+        for i in range(len(denylist['users'])):
+            msg += denylist['users'][i]
+            msg += "\n"
+
+        msg += "```"
+        
+        await ctx.send(msg)
+
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))

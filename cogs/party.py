@@ -8,7 +8,7 @@ from cogs.calcs import Calcs
 
 class Party(commands.Cog):
 
-    @commands.command(name='party', aliases=['pl'])
+    @commands.command(name='party', aliases=['pl'], hidden=True)
     async def party_list(self, ctx):
             await ctx.send("For some reason, this command is not optimized through discord.py. This command takes a ridiculously long time.")
 
@@ -36,6 +36,38 @@ class Party(commands.Cog):
             embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
             
             await ctx.send(embed=embed)
+
+    @commands.command(name='previous_names', aliases=['nm', 'names'])
+    async def previous_names(self, ctx, ign):
+        await ctx.trigger_typing()
+
+
+        uuid = API.get_uuid(self, ign)[0]
+
+        names = API.get_names(self, uuid)
+
+        embed = discord.Embed(
+                color=discord.Color.green(),
+                title='Previous Names for {}'.format(ign),
+                description="\uFEFF"
+            )
+
+        names_string = ''
+        for i in range(len(names)-1):
+            names_string += f'`{names[i]}`\n'
+        
+        embed.add_field(name=f"\uFEFF", value=f'{names_string}')
+
+        embed.set_footer(text="Bedwars Tier Bot || Built by @Iron#1337 et al.")
+            
+        await ctx.send(embed=embed)
+
+    @previous_names.error
+    async def previous_names_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Name History **`ERROR`** | Names takes one argument: Username')
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Name History **`ERROR`** | This might be an invalid username.')
 
     @commands.command(name="status")
     async def status(self, ctx, ign):
@@ -86,6 +118,15 @@ class Party(commands.Cog):
         embed.add_field(
             name="Rank",
             value=f'`{Calcs.Rank.rank(self, ign)}`'
+            )
+        embed.add_field(
+            name="Level",
+            #networkLevel = (sqrt((2 * hypixel_data['player']["networkExp"]) + 30625) / 50) - 2.5
+            value='`{}`'.format(round(Calcs.get_hypixel_network_level(self, hypixel_data['player']["networkExp"])), 2)
+            )
+        embed.add_field(
+            name="Karma",
+            value='`{:,d}`'.format(hypixel_data['player']["karma"])
             )
         embed.add_field(
             name="Guild",

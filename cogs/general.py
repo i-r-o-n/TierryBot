@@ -6,6 +6,7 @@ import json
 from cogs.admin import roles
 from cogs.calcs import Calcs
 from cogs.api import API
+from cogs.admin import denylist, update_denylist
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -58,31 +59,46 @@ class General(commands.Cog):
         
         rank_role = None
 
-        try:
-            rank_role = int(roles[rank])
-        except:
-            rank_role = int(roles['member'])
+        denylist = update_denylist()
 
-        rank_role = discord.utils.get(ctx.guild.roles, id=rank_role)
+        print(member)
+        print(denylist)
+        
+        if str(member) not in list(denylist['users']):
+            if v_role not in member.roles:
+                try:
+                    rank_role = int(roles[rank])
+                except:
+                    rank_role = int(roles['member'])
 
-        if Calcs.Rank.get_sub(self, ign) == 1:
-            sub_role = discord.utils.get(ctx.guild.roles, id=int(roles['mvp++']))
-            await member.add_roles(sub_role)
-            await member.add_roles(discord.utils.get(ctx.guild.roles, id=int(roles['mvp+'])))
+                rank_role = discord.utils.get(ctx.guild.roles, id=rank_role)
+
+                if Calcs.Rank.get_sub(self, ign) == 1:
+                    sub_role = discord.utils.get(ctx.guild.roles, id=int(roles['mvp++']))
+                    await member.add_roles(sub_role)
+                    await member.add_roles(discord.utils.get(ctx.guild.roles, id=int(roles['mvp+'])))
+                else:
+                    pass
+
+                embed = discord.Embed(
+                    color=discord.Color.orange(),
+                    description=f"Verified: {ign}\n{v_role} {rank}",
+                )
+
+                await member.add_roles(v_role)
+                await member.add_roles(rank_role)
+                #NOTE bot cannot change nick of admins
+                await member.edit(nick=ign)
+
+                await ctx.send(embed=embed)
+            
+            else:
+                await ctx.send(f"You have already been verified, contact an admin to be verified again, {member.mention}.")
         else:
             pass
 
-        embed = discord.Embed(
-            color=discord.Color.orange(),
-            description=f"Verified: {ign}\n{v_role} {rank}",
-        )
-
-        await member.add_roles(v_role)
-        await member.add_roles(rank_role)
-        #NOTE bot cannot change nick of admins
-        await member.edit(nick=ign)
-
-        await ctx.send(embed=embed)
+        if str(member) in list(denylist['users']):
+            await ctx.send(f"Sorry, {member.mention}, but you have been banned from using this command.")
 
     @verify.error
     async def verify_error(self, ctx, error):
