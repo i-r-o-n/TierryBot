@@ -1,4 +1,5 @@
 from decimal import HAVE_THREADS
+from os import stat
 from typing import List
 import discord
 from discord.ext import commands
@@ -31,8 +32,6 @@ class Calcs(commands.Cog):
         heads = ''
         shards = ''
         opals = ''
-
-        data = [stars, kdr_raw, kills, games, wins, winrate, heads, shards, opals]
 
         try:
             stars = round(Calcs.get_skywars_star(self, skywars_stats["skywars_experience"]), 2)
@@ -89,62 +88,84 @@ class Calcs(commands.Cog):
         except:
             opals = '?'
 
+        data = [stars, kdr_raw, kills, games, wins, winrate, heads, shards, opals]
+
         return data
 
-    def get_bw(self, ign: str) -> list:
+    def get_bw(self, ign: str, mode=0) -> list:
         uuid = API.get_uuid(self, ign)[0]
 
         hypixel_data = API.get_hypixel(self, uuid)
 
-        stars = ''
-        fkdr_raw = ''
-        fkdr = ''
-        final_kills = ''
-        final_deaths = ''
-        kills = ''
-        deaths = ''
-        bblr = ''
-        beds_broken = ''
-        beds_lost = ''
-        winrate = ''
-        wins = ''
-        losses = ''
-        games_played = ''
-        winstreak = ''
+        stars = 0
+        fkdr_raw = 0
+        fkdr = 0
+        final_kills = 0
+        final_deaths = 0
+        kills = 0
+        deaths = 0
+        bblr = 0
+        beds_broken = 0
+        beds_lost = 0
+        wlr = 0
+        wins = 0
+        losses = 0
+        games_played = 0
+        winstreak = 0
+        resources = [0,0]
 
-        data = [stars, fkdr_raw, fkdr, final_kills, final_deaths, kills, deaths, bblr, beds_broken, beds_lost, winrate, wins, losses, games_played, winstreak]
-
-        bedwars_stats = hypixel_data['player']['stats']['Bedwars']
+        bw_stats = hypixel_data['player']['stats']['Bedwars']
 
         stars = hypixel_data['player']['achievements']['bedwars_level']
             #stars = f'[{stars}✫]'
+
+        index_names = ['','eight_one_', 'eight_two_', 'four_three_', 'four_four_']
+        chosen_index = ''
+
+        for i in range(0,5):
+            if mode == i:
+                chosen_index = index_names[i]
+
+        print(chosen_index)
+
+        final_kills = int(bw_stats[chosen_index + 'final_kills_bedwars'])
+        final_deaths = int(bw_stats[chosen_index + 'final_deaths_bedwars'])
 
         fkdr = str(round(final_kills / final_deaths, 2))
         fkdr += f' ({final_kills}/{final_deaths})'
         fkdr_raw = round(final_kills / final_deaths, 2)
 
-        final_kills = int(bedwars_stats['final_kills_bedwars'])
-        final_deaths = int(bedwars_stats['final_deaths_bedwars'])
+        kills = bw_stats[chosen_index + 'kills_bedwars']
+        deaths = bw_stats[chosen_index + 'deaths_bedwars']
 
-        kills = bedwars_stats['kills_bedwars']
-        deaths = bedwars_stats['deaths_bedwars']
+        kdr = round(kills / deaths, 2)
 
-        beds_broken = int(bedwars_stats['beds_broken_bedwars'])
-        beds_lost = int(bedwars_stats['beds_lost_bedwars'])
-        bblr = wins / (wins + losses) * 100
-        bblr = f'{bblr:.2f}%'
+        try:
+            beds_broken = int(bw_stats[chosen_index + 'beds_broken_bedwars'])
+        except:
+            pass
+        try:
+            beds_lost = int(bw_stats[chosen_index + 'beds_lost_bedwars'])
+        except:
+            pass
+        try:
+            bblr = round(beds_broken / beds_lost, 2)
+        except:
+            bblr = beds_broken
         
-        wins = int(bedwars_stats['wins_bedwars'])
-        losses = int(bedwars_stats['losses_bedwars'])
+        wins = int(bw_stats[chosen_index + 'wins_bedwars'])
+        losses = int(bw_stats[chosen_index + 'losses_bedwars'])
 
-        winrate = wins / (wins + losses) * 100
-        winrate = f'{winrate:.2f}%'
+        wlr = wins / (wins + losses) * 100
+        wlr = f'{wlr:.2f}%'
 
-        winstreak = bedwars_stats['winstreak']
+        winstreak = bw_stats[chosen_index + 'winstreak']
 
-        games_played = bedwars_stats['games_played_bedwars_1']
+        games_played = wins + losses
 
-        return data
+        resources = [bw_stats[chosen_index + "iron_resources_collected_bedwars"], bw_stats[chosen_index + "gold_resources_collected_bedwars"]]
+        
+        return [stars, fkdr_raw, fkdr, final_kills, final_deaths, kdr, kills, deaths, bblr, beds_broken, beds_lost, wlr, wins, losses, games_played, winstreak, resources]
 
     def get_hypixel_network_level(self, exp: int) -> int:
         return (math.sqrt((2 * exp) + 30625) / 50) - 2.5
@@ -267,69 +288,100 @@ class Calcs(commands.Cog):
 
     class Get_Tier:
         
-        # conver to list type
+        # t = tier
         def __init__(self) -> None:
-            self.t_star = json.loads(tiers['star'])
+            self.t_stars = json.loads(tiers['stars'])
             self.t_fkdr = json.loads(tiers['fkdr'])
-            self.t_finals = json.loads(tiers['finals'])
+            self.t_final_kills = json.loads(tiers['final_kills'])
             self.t_kills = json.loads(tiers['kills'])
-            self.t_beds = json.loads(tiers['beds'])
-            self.t_games = json.loads(tiers['games'])
+            self.t_bblr = json.loads(tiers['bblr'])
+            self.t_beds_broken = json.loads(tiers['beds_broken'])
+            self.t_wlr = json.loads(tiers['winrate'])
+            self.t_wins = json.loads(tiers['wins'])
+            self.t_games_played = json.loads(tiers['games_played'])
             self.tiers_set = [
-                self.t_star,
+                self.t_stars,
                 self.t_fkdr,
-                self.t_finals,
+                self.t_final_kills,
                 self.t_kills,
-                self.t_beds,
-                self.t_games
+                self.t_bblr,
+                self.t_beds_broken,
+                self.t_wlr,
+                self.t_wins,
+                self.t_games_played
             ]
+            return self.tiers_set
 
         def get_closest(self, ign: str) -> List[int]:
 
-            c_star = 0
-            c_fkdr = 0
-            c_finals = 0
-            c_kills = 0
-            c_beds = 0
-            c_games = 0
-
-            stats = Calcs.get_bw(self, ign)
-
             # c = closest
 
+            c_stars = 0
+            c_fkdr = 0
+            c_final_kills = 0
+            c_kills = 0
+            c_bblr = 0
+            c_beds_broken = 0
+            c_wlr = 0
+            c_wins = 0
+            c_games_played = 0
+
+            stats = Calcs.get_bw(self, ign)
+            #[stars, fkdr_raw, fkdr, final_kills, final_deaths, kdr, kills, deaths, bblr, beds_broken, beds_lost, wlr, wins, losses, games_played, winstreak, resources]
+            #[stars, fkdr_raw, final_kills, kills, bblr, beds_broken, wlr, wins, games_played]
+            abbv_list = [0,1,3,6,8,9,11,12,14]
+
             stats_set = [
-                c_star,
+                c_stars,
                 c_fkdr,
-                c_finals,
+                c_final_kills,
                 c_kills,
-                c_beds,
-                c_games
+                c_bblr,
+                c_beds_broken,
+                c_wlr,
+                c_wins,
+                c_games_played,
                 ]
 
+
             for i in range(len(stats_set)):
-                stats_set[i] = min(self.tiers_set[i], key=(lambda list_value : abs(list_value - stats[i])))
-                if stats[i] < stats_set[i]:
+                stats_value = 0
+                if i == 6:
+                    stats_value = float(stats[abbv_list[i]][0:-1])
+                else:
+                    stats_value = float(stats[abbv_list[i]])
+                
+                stats_set[i] = min(self.tiers_set[i], key=(lambda list_value : abs(list_value - stats_value)))
+                if stats_value < stats_set[i]:
                     stats_set[i] = stats_set[i] = self.tiers_set[i].index(stats_set[i])-1
-                elif stats[i] >= stats_set[i]:
+                elif stats_value >= stats_set[i]:
                     stats_set[i] = self.tiers_set[i].index(stats_set[i])
 
             return [stats_set, round(mean(stats_set),0)]
 
         def get_difference(self, ign: str) -> list:
+
             stats = Calcs.get_bw(self, ign)
 
-            dr_star = 0
+            dr_stars = 0
             dr_fkdr = 0
-            dr_finals = 0
+            dr_final_kills = 0
             dr_kills = 0
-            dr_beds = 0
-            dr_games = 0
-            d_star = 0
+            dr_bblr = 0
+            dr_beds_broken = 0
+            dr_wlr = 0
+            dr_wins = 0
+            dr_games_played = 0
+            
+            d_stars = 0
             d_fkdr = 0
-            d_finals = 0
+            d_final_kills = 0
             d_kills = 0
-            d_beds = 0
-            d_games = 0
+            d_bblr = 0
+            d_beds_broken = 0
+            d_wlr = 0
+            d_wins = 0
+            d_games_played = 0
 
             # d = difference
             
@@ -341,66 +393,94 @@ class Calcs(commands.Cog):
             closest_relatives = closest[0]
 
             relatives_set = [
-                dr_star,
+                dr_stars,
                 dr_fkdr,
-                dr_finals,
+                dr_final_kills,
                 dr_kills,
-                dr_beds, 
-                dr_games
+                dr_bblr,
+                dr_beds_broken,
+                dr_wlr,
+                dr_wins,
+                dr_games_played,
             ]
 
             absolutes_set = [
-                d_star,
+                d_stars,
                 d_fkdr,
-                d_finals,
+                d_final_kills,
                 d_kills,
-                d_beds, 
-                d_games
+                d_bblr,
+                d_beds_broken,
+                d_wlr,
+                d_wins,
+                d_games_played,
             ]
+
+            abbv_list = [0,1,3,6,8,9,11,12,14]
 
             stats_set = []
 
-            for i in range(len(relatives_set)):
-                relatives_set[i] = round(stats[i]/self.tiers_set[i][closest_relatives[i]],2)
-
-            for i in range(len(absolutes_set)):
-                absolutes_set[i] = round(stats[i]/self.tiers_set[i][closest_rank],2)
+            stats_value = []
 
             for i in range(len(relatives_set)):
-                stats_set.append(relatives_set[i])
+                
+                if i == 6:
+                    stats_value.append(float(stats[abbv_list[i]][0:-1]))
+                else:
+                    stats_value.append(float(stats[abbv_list[i]]))
+
+            for i in range(len(relatives_set)):
+                relatives_set[i] = round(stats_value[i]/self.tiers_set[i][closest_relatives[i]],2)
 
             for i in range(len(absolutes_set)):
-                stats_set.append(absolutes_set[i])
+                absolutes_set[i] = round(stats_value[i]/self.tiers_set[i][closest_rank],2)
 
-            return [stats_set, round(mean(relatives_set),2), round(mean(absolutes_set),2)]
+            return [relatives_set, absolutes_set, round(mean(relatives_set),2), round(mean(absolutes_set),2)]
 
         def get_next_difference(self, ign: str):
 
-            d_star = 0
+            d_stars = 0
             d_fkdr = 0
-            d_finals = 0
+            d_final_kills = 0
             d_kills = 0
-            d_beds = 0
-            d_games = 0
+            d_bblr = 0
+            d_beds_broken = 0
+            d_wlr = 0
+            d_wins = 0
+            d_games_played = 0
 
             stats = Calcs.get_bw(self, ign)
+
+            abbv_list = [0,1,3,6,8,9,11,12,14]
+
+            stats_value = []
 
             closest_relatives = Calcs.Get_Tier.get_closest(self, ign)[0]
 
             stats_set = [
-                d_star,
+                d_stars,
                 d_fkdr,
-                d_finals,
+                d_final_kills,
                 d_kills,
-                d_beds, 
-                d_games
+                d_bblr,
+                d_beds_broken,
+                d_wlr,
+                d_wins,
+                d_games_played,
             ]
 
             for i in range(len(stats_set)):
-                stats_set[i] = round(self.tiers_set[i][closest_relatives[i]]-stats[i],2)
+                
+                if i == 6:
+                    stats_value.append(float(stats[abbv_list[i]][0:-1]))
+                else:
+                    stats_value.append(float(stats[abbv_list[i]]))
+
+            for i in range(len(stats_set)):
+                stats_set[i] = round(self.tiers_set[i][closest_relatives[i]]-stats_value[i],2)
                 if stats_set[i] < 0:
                     try:
-                        stats_set[i] = round(self.tiers_set[i][closest_relatives[i]+1]-stats[i],2)
+                        stats_set[i] = round(self.tiers_set[i][closest_relatives[i]+1]-stats_value[i],2)
                     except:
                         pass
                         # There is not currently a tier above this stat value.
@@ -408,8 +488,8 @@ class Calcs(commands.Cog):
             return stats_set
 
         def to_romans(self, tier: int) -> str:
-            romans = ["0","I","II","III","IV","V","VI","VII","VIII","IX","X"]
-            return str(f"[Tier {romans[tier]}]")
+            romans = ["I","II","III","IV","V","VI","VII","VIII","IX","X"]
+            return str(f"[Tier {romans[tier-1]}]")
 
 
 
