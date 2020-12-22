@@ -15,6 +15,8 @@ class Calcs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+#minigame calculations
+
     def get_sw(self, ign: str) -> list:
         uuid = API.get_uuid(self, ign)[0]
 
@@ -22,16 +24,17 @@ class Calcs(commands.Cog):
 
         skywars_stats = hypixel_data['player']['stats']['SkyWars']
 
-        stars = ''
-        kdr_raw = ''
-        kills = ''
-        games = ''
-        wins = ''
-        winrate = ''
-        kdr = ''
-        heads = ''
-        shards = ''
-        opals = ''
+        stars = 0
+        kdr_raw = 0
+        kills = 0
+        deaths = 0
+        games = 0
+        wins = 0
+        losses = 0
+        winrate = 0
+        heads = 0
+        shards = 0
+        opals = 0
 
         try:
             stars = round(Calcs.get_skywars_star(self, skywars_stats["skywars_experience"]), 2)
@@ -41,54 +44,49 @@ class Calcs(commands.Cog):
         try:
             kills = int(skywars_stats['kills'])
             deaths = int(skywars_stats['deaths'])
-            kdr += str(round(kills / deaths, 2))
-            kdr += f' ({kills}/{deaths})'
             kdr_raw = round(kills / deaths, 2)
         except:
-            kdr = '?'
-            kills = '?'
-            kdr_raw = '?'
-        
+            pass
+
         try:
             wins = int(skywars_stats['wins'])
             losses = int(skywars_stats['losses'])
             winrate = wins / (wins + losses) * 100
             winrate = f'{winrate:.2f}%'
         except:
-            winrate = '?'
+            pass
 
         try:
             games = skywars_stats['games_played_skywars']
         except:
-            games = '?'
-
-        try:
-            wins = skywars_stats['wins']
-        except:
-            wins = '?'
+            pass
         
         try:
             kills = skywars_stats['kills']
         except:
-            kills = '?'
+            pass
+
+        try:
+            deaths = skywars_stats['deaths']
+        except:
+            pass
     
         try:
             heads = skywars_stats['heads']
         except:
-            heads = '?'
+            pass
         
         try:
             shards = skywars_stats['shard']
         except:
-            shards = '?'
+            pass
 
-        opals = ''
         try:
             opals = skywars_stats['opals']
         except:
-            opals = '?'
+            pass
 
-        data = [stars, kdr_raw, kills, games, wins, winrate, heads, shards, opals]
+        data = [stars, kdr_raw, kills, deaths, games, winrate, wins, losses, heads, shards, opals]
 
         return data
 
@@ -167,6 +165,107 @@ class Calcs(commands.Cog):
         
         return [stars, fkdr_raw, fkdr, final_kills, final_deaths, kdr, kills, deaths, bblr, beds_broken, beds_lost, wlr, wins, losses, games_played, winstreak, resources]
 
+    def get_uhc(self, ign: str) -> list:
+        uuid = API.get_uuid(self, ign)[0]
+
+        hypixel_data = API.get_hypixel(self, uuid)
+
+        uhc_stats = hypixel_data['player']['stats']['UHC']
+
+        kills = 0
+        deaths = 0
+        wins = 0
+        coins = 0
+        kills_solo = 0
+        wins_solo = 0
+        score = 0
+
+        try:
+            score = uhc_stats['score']
+        except:
+            pass
+
+        try:
+            coins = uhc_stats['coins']
+        except:
+            pass
+
+        try:
+            kills = uhc_stats["kills"]
+            kills_solo = uhc_stats["kills_solo"]
+        except:
+            pass
+        try:
+            deaths = uhc_stats["deaths"]
+        except:
+            pass
+        kdr = 0
+        try:
+            kdr = round((kills+kills_solo)/deaths,2)
+        except:
+            kdr = kills
+    
+        try:
+            wins = uhc_stats["wins"]
+            wins_solo = uhc_stats["wins_solo"]
+        except:
+            pass
+
+        wlr = 0
+        try:
+            wlr = round(wins/deaths,2)
+        except:
+            wlr = wins
+
+
+        return [kdr, kills, kills_solo, deaths, wlr, wins, wins_solo, score, coins]
+
+
+    def get_duels(self, ign: str) -> list:
+        uuid = API.get_uuid(self, ign)[0]
+
+        hypixel_data = API.get_hypixel(self, uuid)
+
+        duels_stats = hypixel_data['player']['stats']['Duels']
+
+        kills = 0
+        deaths = 0
+        wins = 0
+        losses = 0
+
+        try:
+            kills = duels_stats["kills"]
+        except:
+            pass
+        try:
+            deaths = duels_stats["deaths"]
+        except:
+            pass
+        kdr = 0
+        try:
+            kdr = round(kills/deaths,2)
+        except:
+            kdr = kills
+    
+        try:
+            wins = duels_stats["wins"]
+        except:
+            pass
+        try:
+            losses = duels_stats["losses"]
+        except:
+            pass
+        games = duels_stats["games_played_duels"]
+        wlr = 0
+        try:
+            wlr = round(wins/losses,2)
+        except:
+            wlr = wins
+
+
+        return [kdr, kills, deaths, wlr, wins, losses, games]
+
+
     def get_hypixel_network_level(self, exp: int) -> int:
         return (math.sqrt((2 * exp) + 30625) / 50) - 2.5
 
@@ -227,6 +326,35 @@ class Calcs(commands.Cog):
             pass
 
         return online
+
+    def get_guild_level(guild_xp):
+            XP_NEEDED = [
+                100000,
+                250000,
+                500000,
+                1000000,
+                1750000,
+                2750000,
+                4000000,
+                5500000,
+                7500000
+            ]
+
+            level = 0
+
+            for xp_level in XP_NEEDED:
+                if guild_xp >= xp_level:
+                    level += 1
+                elif guild_xp < xp_level:
+                    return level
+
+            if guild_xp >= 750000:
+                if guild_xp < 15000000:
+                    level = math.floor(guild_xp - 7500000) / 2500000 + 9
+                else:
+                    level = math.floor(guild_xp - 15000000) / 3000000 + 12
+
+            return round(level, 2)
 
     class Rank:
 

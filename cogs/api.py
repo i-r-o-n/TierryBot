@@ -16,6 +16,8 @@ class API(commands.Cog):
 
 	def get_hypixel(self, uuid, hypixel_key=None, data='player', id_tag='uuid'):
 
+
+		#uuid can be data other than uuid in some cases
 		global i
 		i += 1
 		i %= Key.key_index_len
@@ -24,7 +26,7 @@ class API(commands.Cog):
 
 		response = requests.get(f'https://api.hypixel.net/{data}?key={hypixel_key}&{id_tag}={uuid}')
 		response = json.loads(response.text)
-		print(i)
+
 		return response
 
 	def get_key_info(self, key):
@@ -78,33 +80,45 @@ class API(commands.Cog):
 		return names
 
 	def get_uuid(self, ign):
-		response = requests.get(f'https://api.mojang.com/users/profiles/minecraft/{ign}')
-		response = json.loads(response.text)
-		uuid = None
-		
 		try:
+			response = requests.get(f'https://api.mojang.com/users/profiles/minecraft/{ign}')
+			response = json.loads(response.text)
+
 			uuid = response['id']
 			ign = response['name']
 		except:
-			raise ValueError('Invalid username')
+			return None
 		return [uuid, ign]
 
-	def get_guild(self, ign):
-		uuid = API.get_uuid(self, ign)[0]
 
-		g_uuid = API.get_hypixel(self, uuid, data='findGuild', id_tag='byUuid')
+	def get_guild(self, ign, guild_name = None):
 
-		guild_name = '?'
+		try: 
+			uuid = API.get_uuid(self, ign)[0]
+		except:
+			return None
 
-		if g_uuid['success'] == True:
-			g_uuid = g_uuid['guild']
+		if guild_name != None:
+			g_uuid = API.get_hypixel(self, guild_name, data='findGuild', id_tag='byName')['guild']
 
-		guild = API.get_hypixel(self, g_uuid, data='guild', id_tag='id')
+			guild = API.get_hypixel(self, str(g_uuid), data='guild', id_tag='id')
 
-		if guild['success'] == True:
-			guild_name = guild['guild']['name']
+			return guild
+		else:
 
-		return guild_name
+			g_uuid = API.get_hypixel(self, uuid, data='findGuild', id_tag='byUuid')
+
+			guild_name = '?'
+
+			if g_uuid['success'] == True:
+				g_uuid = g_uuid['guild']
+
+			guild = API.get_hypixel(self, g_uuid, data='guild', id_tag='id')
+
+			if guild['success'] == True:
+				guild_name = guild['guild']['name']
+
+			return guild_name
 
 def setup(bot):
     bot.add_cog(API(bot))

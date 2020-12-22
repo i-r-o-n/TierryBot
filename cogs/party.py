@@ -49,7 +49,7 @@ class Party(commands.Cog):
         embed = discord.Embed(
                 color=discord.Color.green(),
                 title='Previous Names for {}'.format(ign),
-                description="\uFEFF"
+                description='https://namemc.com/profile/{}'.format(ign)
             )
 
         names_string = ''
@@ -70,7 +70,14 @@ class Party(commands.Cog):
             await ctx.send('Name History **`ERROR`** | This might be an invalid username.')
 
     @commands.command(name="status")
-    async def status(self, ctx, ign):
+    async def status(self, ctx, ign: str=None):
+        await ctx.trigger_typing()
+
+        if ign == None:
+            ign = ctx.author.nick
+            ign = Calcs.get_nick(self, ign)
+            await ctx.send(f"using ign: {ign}")
+
         await ctx.trigger_typing()
 
         uuid = API.get_uuid(self, ign)[0]
@@ -81,7 +88,7 @@ class Party(commands.Cog):
                 await ctx.send("Invalid API Key")
             
             await ctx.send(ctx.message.author.mention)
-            return await ctx.send(embed=discord.Embed(description = f'The player "{ign}" doesn\'t exist or has not logged on to Hypixel before!'))
+            await ctx.send(embed=discord.Embed(description = f'The player "{ign}" doesn\'t exist or has not logged on to Hypixel before!'))
 
         online = False
         color = discord.Color.red()
@@ -133,6 +140,11 @@ class Party(commands.Cog):
             value=f'`{API.get_guild(self, ign)}`'
             )
         embed.add_field(
+            name="NameMC",
+            value='https://namemc.com/profile/{}'.format(ign),
+            inline=False
+            )
+        embed.add_field(
             name="\uFEFF",
             value='\uFEFF',
             inline=False
@@ -174,6 +186,155 @@ class Party(commands.Cog):
            await ctx.send('Status **`ERROR`** | Status takes one argument: Username')
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Status **`ERROR`** | This might be an outdated or invalid username.')
+
+    
+    @commands.command(name="guild", aliases=['g'])
+    async def guild(self, ctx, ign: str=None, guild_name: str=None, list_members: str=None):
+        await ctx.trigger_typing()
+
+        if ign == None:
+            ign = ctx.author.nick
+            ign = Calcs.get_nick(self, ign)
+            await ctx.send(f"using ign: {ign}")
+
+        if guild_name == None:
+            guild_name = API.get_guild(self, ign)
+
+        guild_data = None
+
+        use_guild_name = False
+
+        if ign == "info" and guild_name != None:
+            await ctx.send(f'Getting guild info for "{guild_name}"')
+            guild_data = API.get_guild(self, ign, guild_name)
+            use_guild_name = True
+
+
+        await ctx.trigger_typing()
+        
+        uuid = None
+
+        show_data = False
+
+        try:
+            uuid = API.get_uuid(self, ign)[0]
+        except:
+            pass
+
+        hypixel_data = API.get_hypixel(self, uuid)
+        if not bool(hypixel_data["success"]):
+            if hypixel_data["cause"] == 'Invalid API key':
+                await ctx.send("Invalid API Key")
+            
+            await ctx.send(ctx.message.author.mention)
+            await ctx.send(embed=discord.Embed(description = f'The player "{ign}" doesn\'t exist or has not logged on to Hypixel before!'))
+
+        creation_date = "?"
+        level = "?"
+        most_earnings_game = "?"
+        owner = "?"
+
+        try:
+            if use_guild_name == False:
+                guild_data = API.get_guild(self, ign, guild_name)
+
+            creation_date = guild_data['guild']['created']
+            creation_date = datetime.utcfromtimestamp(int(creation_date)/1000).strftime('%Y-%m-%d %H:%M:%S')
+            level = Calcs.get_guild_level(int(guild_data['guild']['exp']))
+
+            games = []
+            game_earnings = []
+            for game in guild_data['guild']['guildExpByGameType']:
+                games.append(game)
+                game_earnings.append(guild_data['guild']['guildExpByGameType'][game])
+            max_earnings_index = game_earnings.index(max(game_earnings))
+            most_earnings_game = games[max_earnings_index]
+
+            for member in guild_data['guild']['members']:
+                if member['rank'] == "Guild Master":
+                    owner = API.get_ign(self, member['uuid'])
+
+            show_data = True
+        except:
+            if guild_name == "?" or guild_name == None:
+                guild_name = ""
+            if ign == "info" and use_guild_name == True:
+                ign = ""
+            await ctx.send(f'The guild "{guild_name}" doesn\'t exist \nor the player "{ign}" does not belong to a guild.')
+
+
+
+        color = discord.Color.blue()
+        color2 = discord.Color.blurple()
+
+
+        image = f"https://mc-heads.net/head/{uuid}/128"
+
+        embed = discord.Embed(
+                title = "Guild | {}".format(guild_name),
+                description = "\uFEFF",
+                color = color
+        )
+        if use_guild_name == False:
+            embed.set_author(
+                name = ign,
+                icon_url = image
+            )
+
+
+        embed.add_field(
+        name="Creation Date",
+        value='`{}`'.format(creation_date),
+        inline=False
+        )
+        embed.add_field(
+        name="Guild Level",
+        value='`{}`'.format(level)
+        )
+        embed.add_field(
+        name="Owner",
+        value='`{}`'.format(owner),
+        )
+        embed.add_field(
+        name="Most Played Game",
+        value='`{}`'.format(most_earnings_game)
+        )
+
+        if show_data == True:
+            await ctx.send(ctx.message.author.mention)
+            await ctx.send(embed=embed)
+
+        if list_members == "members" or list_members != "":
+
+            embed = discord.Embed(
+                title = "Guild Members | {}".format(guild_name),
+                description = "\uFEFF",
+                color = color2
+            )
+
+            for member in guild_data['guild']['members']:
+                member_ign = API.get_ign(self, member['uuid'])
+                member_join_date = member['joined']
+                member_join_date = datetime.utcfromtimestamp(int(member_join_date)/1000).strftime('%Y-%m-%d')
+                member_rank = member['rank']
+
+                embed.add_field(
+                name=f"**{member_ign}**",
+                value=f'''
+                - joined on `{member_join_date}`
+                - rank . . . . .`{member_rank}`
+                ''',
+                inline=False
+                )
+
+            return await ctx.send(embed=embed)
+
+    #@guild.error
+    async def guild_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+           await ctx.send('Guild **`ERROR`** | Status takes one argument: Username')
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Guild **`ERROR`** | This might be an outdated or invalid username.')
 
 def setup(bot):
     bot.add_cog(Party(bot))

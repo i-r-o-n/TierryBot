@@ -11,7 +11,8 @@ class Error(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('Generic - **`ERROR`** | Missing Required Argument')
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send('Generic - **`ERROR`** | Command Not Found')
+            #await ctx.send('Generic - **`ERROR`** | Command Not Found')
+            pass
         if isinstance(error, commands.BadArgument):
             await ctx.send('Generic - **`ERROR`** | Bad Argument')
 
